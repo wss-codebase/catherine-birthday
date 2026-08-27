@@ -42,6 +42,15 @@
       if (isOpen) {
         const rect = box.getBoundingClientRect();
         burstConfetti(rect.left + rect.width / 2);
+
+        const revealEl = gift.querySelector('.reveal');
+        setTimeout(() => {
+          const revealRect = revealEl.getBoundingClientRect();
+          const fitsInView = revealRect.top >= 0 && revealRect.bottom <= window.innerHeight;
+          if (!fitsInView) {
+            revealEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 350);
       }
     });
   });
