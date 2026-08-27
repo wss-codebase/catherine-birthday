@@ -1,12 +1,12 @@
 (function () {
-  const confettiColors = ['#e8c27a', '#8a2846', '#c98a4b', '#f4e3c1', '#5c1f3f', '#d97b9c'];
+  const confettiColors = ['#ff5c8a', '#2ec4b6', '#7b5cff', '#ffc94d', '#ff6b6b', '#ffe066', '#e8c27a', '#d97b9c'];
   const confettiField = document.getElementById('confettiField');
   const introScreen = document.getElementById('introScreen');
   const giftsScreen = document.getElementById('giftsScreen');
   const openGiftsBtn = document.getElementById('openGiftsBtn');
 
   function burstConfetti(originX, originY) {
-    const pieceCount = 30;
+    const pieceCount = 55;
     for (let i = 0; i < pieceCount; i++) {
       const piece = document.createElement('span');
       piece.className = 'confetti-piece';
