@@ -4,11 +4,13 @@
   --gold: #ffc94d;
   --teal: #2ec4b6;
   --coral: #ff6b6b;
-  --bg-1: #4a2b8f;
-  --bg-2: #ff5c8a;
-  --bg-3: #ffc94d;
+  --bg-1: #241134;
+  --bg-2: #7a2148;
+  --bg-3: #c98a4b;
   --paper: #fffaf3;
   --ink: #2b1b4d;
+  --balloon-gold: #e8c27a;
+  --balloon-berry: #8a2846;
 }
 
 * { box-sizing: border-box; }
@@ -23,9 +25,9 @@ body {
   font-family: 'Nunito', system-ui, sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.18), transparent 40%),
-    radial-gradient(circle at 85% 10%, rgba(255,255,255,0.15), transparent 35%),
-    linear-gradient(160deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,0.07), transparent 40%),
+    radial-gradient(circle at 88% 78%, rgba(232,194,122,0.28), transparent 45%),
+    linear-gradient(150deg, var(--bg-1) 0%, var(--bg-2) 58%, var(--bg-3) 100%);
   overflow-x: hidden;
   position: relative;
 }
@@ -58,6 +60,89 @@ body {
 .hero {
   text-align: center;
   padding: 4rem 1.5rem 2rem;
+}
+
+.balloons {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.balloon {
+  position: relative;
+  width: 84px;
+  height: 102px;
+  border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset -10px -14px 20px rgba(0,0,0,0.18),
+    inset 8px 10px 18px rgba(255,255,255,0.22),
+    0 14px 24px rgba(0,0,0,0.3);
+}
+
+.balloon::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 10px solid;
+}
+
+.balloon-string {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 64px;
+  margin-top: 6px;
+  overflow: visible;
+}
+
+.balloon-string path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 2;
+}
+
+.balloon-number {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 2.5rem;
+}
+
+.balloon-4 {
+  background: radial-gradient(circle at 32% 26%, #f8e3b3, var(--balloon-gold) 55%, #a1782f 100%);
+  animation: balloon-float-a 4.6s ease-in-out infinite;
+}
+.balloon-4::after { border-top-color: #a1782f; }
+.balloon-4 .balloon-number { color: #5c3a12; text-shadow: 0 1px 0 rgba(255,255,255,0.35); }
+
+.balloon-7 {
+  background: radial-gradient(circle at 32% 26%, #d97b9c, var(--balloon-berry) 60%, #4d132a 100%);
+  animation: balloon-float-b 5.2s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+.balloon-7::after { border-top-color: #4d132a; }
+.balloon-7 .balloon-number { color: #fbe7d0; }
+
+@keyframes balloon-float-a {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-14px) rotate(-3deg); }
+}
+
+@keyframes balloon-float-b {
+  0%, 100% { transform: translateY(0) rotate(5deg); }
+  50% { transform: translateY(-10px) rotate(8deg); }
 }
 
 .eyebrow {

@@ -1,5 +1,5 @@
 (function () {
-  const confettiColors = ['#ff5c8a', '#ffc94d', '#2ec4b6', '#7b5cff', '#ff6b6b', '#ffe066'];
+  const confettiColors = ['#e8c27a', '#8a2846', '#c98a4b', '#f4e3c1', '#5c1f3f', '#d97b9c'];
   const confettiField = document.getElementById('confettiField');
 
   function burstConfetti(originX) {
