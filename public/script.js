@@ -20,8 +20,8 @@
       const distance = 60 + Math.random() * 110;
       const dx = Math.sin(angle) * distance;
       const dy = -Math.cos(angle) * distance;
-      const fx = dx + (Math.random() * 60 - 30);
-      const fy = dy + 130 + Math.random() * 90;
+      const fx = dx + (Math.random() * 90 - 45);
+      const fy = dy + 260 + Math.random() * 220;
 
       piece.style.setProperty('--dx', dx + 'px');
       piece.style.setProperty('--dy', dy + 'px');
@@ -29,7 +29,7 @@
       piece.style.setProperty('--fy', fy + 'px');
       piece.style.setProperty('--rot1', (Math.random() * 360 - 180) + 'deg');
       piece.style.setProperty('--rot2', (Math.random() * 720 - 360) + 'deg');
-      piece.style.animationDuration = (1.1 + Math.random() * 0.6) + 's';
+      piece.style.animationDuration = (1.8 + Math.random() * 0.8) + 's';
       piece.style.width = (6 + Math.random() * 6) + 'px';
       piece.style.height = (10 + Math.random() * 8) + 'px';
       confettiField.appendChild(piece);
