@@ -152,6 +152,7 @@ main {
   opacity: 0.85;
   font-weight: 600;
   margin-top: 1rem;
+  line-height: 1.8;
 }
 
 .balloons {
