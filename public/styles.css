@@ -170,8 +170,8 @@ main {
 .greeting {
   font-family: 'Baloo 2', sans-serif;
   font-weight: 800;
-  font-size: clamp(1.9rem, 5.5vw, 3.1rem);
-  margin: 0 0 0.5rem;
+  font-size: clamp(3rem, 16.5vw, 9.3rem);
+  margin: 0 0 clamp(1.5rem, 5vh, 3.5rem);
   color: #fff;
   text-shadow: 0 4px 0 rgba(43, 27, 77, 0.35), 0 10px 30px rgba(0,0,0,0.25);
 }
@@ -210,28 +210,6 @@ main {
   border-right: 6px solid transparent;
   border-top: 10px solid;
 }
-
-.cat-ear {
-  position: absolute;
-  top: -15px;
-  width: 26px;
-  height: 26px;
-  clip-path: polygon(50% 0%, 5% 100%, 95% 100%);
-  z-index: 0;
-}
-
-.cat-ear-left {
-  left: 2px;
-  transform: rotate(-18deg);
-}
-
-.cat-ear-right {
-  right: 2px;
-  transform: rotate(18deg);
-}
-
-.balloon-4 .cat-ear { background: var(--balloon-gold); }
-.balloon-7 .cat-ear { background: var(--balloon-berry); }
 
 .balloon-string {
   position: absolute;
