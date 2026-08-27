@@ -5,16 +5,31 @@
   const giftsScreen = document.getElementById('giftsScreen');
   const openGiftsBtn = document.getElementById('openGiftsBtn');
 
-  function burstConfetti(originX) {
-    const pieceCount = 26;
+  function burstConfetti(originX, originY) {
+    const pieceCount = 30;
     for (let i = 0; i < pieceCount; i++) {
       const piece = document.createElement('span');
       piece.className = 'confetti-piece';
       const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
       piece.style.background = color;
-      piece.style.left = (originX + (Math.random() * 200 - 100)) + 'px';
-      piece.style.animationDuration = (2.2 + Math.random() * 1.4) + 's';
-      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+      piece.style.left = originX + 'px';
+      piece.style.top = originY + 'px';
+
+      // shoot mostly up and outward, like it's popping out of the box
+      const angle = (Math.random() * 150 - 75) * (Math.PI / 180);
+      const distance = 60 + Math.random() * 110;
+      const dx = Math.sin(angle) * distance;
+      const dy = -Math.cos(angle) * distance;
+      const fx = dx + (Math.random() * 60 - 30);
+      const fy = dy + 130 + Math.random() * 90;
+
+      piece.style.setProperty('--dx', dx + 'px');
+      piece.style.setProperty('--dy', dy + 'px');
+      piece.style.setProperty('--fx', fx + 'px');
+      piece.style.setProperty('--fy', fy + 'px');
+      piece.style.setProperty('--rot1', (Math.random() * 360 - 180) + 'deg');
+      piece.style.setProperty('--rot2', (Math.random() * 720 - 360) + 'deg');
+      piece.style.animationDuration = (1.1 + Math.random() * 0.6) + 's';
       piece.style.width = (6 + Math.random() * 6) + 'px';
       piece.style.height = (10 + Math.random() * 8) + 'px';
       confettiField.appendChild(piece);
@@ -41,7 +56,7 @@
 
       if (isOpen) {
         const rect = box.getBoundingClientRect();
-        burstConfetti(rect.left + rect.width / 2);
+        burstConfetti(rect.left + rect.width / 2, rect.top + rect.height * 0.25);
 
         const revealEl = gift.querySelector('.reveal');
         setTimeout(() => {
