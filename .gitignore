@@ -1,0 +1,9 @@
+node_modules/
+.wrangler/
+.dev.vars
+*.log
+
+# original full-resolution source photos (optimized copies live in public/images)
+/ammo.jpg
+/license.jpg
+/shooting.jpg

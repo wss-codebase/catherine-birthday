@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catherine's Birthday Presents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="confetti-field" id="confettiField" aria-hidden="true"></div>
+
+<header class="hero">
+  <p class="eyebrow">🎉 Happy Birthday 🎉</p>
+  <h1>Catherine's Birthday Presents</h1>
+  <p class="subtitle">Click each gift to open it!</p>
+</header>
+
+<main class="gifts" id="gifts">
+
+  <section class="gift" data-gift="1">
+    <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-1">
+      <span class="box-lid"></span>
+      <span class="box-body">
+        <span class="ribbon-v"></span>
+        <span class="ribbon-h"></span>
+        <span class="bow">🎀</span>
+      </span>
+      <span class="gift-label">Gift #1</span>
+    </button>
+    <div class="reveal" id="reveal-1">
+      <img src="images/license.jpg" alt="Catherine holding her firearms possession and acquisition licence" loading="lazy">
+      <p class="reveal-caption">🎓 Your Firearm Safety &amp; Licensing Course</p>
+    </div>
+  </section>
+
+  <section class="gift" data-gift="2">
+    <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-2">
+      <span class="box-lid"></span>
+      <span class="box-body">
+        <span class="ribbon-v"></span>
+        <span class="ribbon-h"></span>
+        <span class="bow">🎀</span>
+      </span>
+      <span class="gift-label">Gift #2</span>
+    </button>
+    <div class="reveal" id="reveal-2">
+      <img src="images/ammo.jpg" alt="A pile of shotgun shells" loading="lazy">
+      <p class="reveal-caption">💥 A Stash of Shotgun Ammo</p>
+    </div>
+  </section>
+
+  <section class="gift" data-gift="3">
+    <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-3">
+      <span class="box-lid"></span>
+      <span class="box-body">
+        <span class="ribbon-v"></span>
+        <span class="ribbon-h"></span>
+        <span class="bow">🎀</span>
+      </span>
+      <span class="gift-label">Gift #3</span>
+    </button>
+    <div class="reveal" id="reveal-3">
+      <img src="images/shooting.jpg" alt="Catherine shooting clay pigeons outdoors" loading="lazy">
+      <p class="reveal-caption">🎯 A Clay Pigeon Shooting Outing</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p>Made with 🎂 for Catherine's big day</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
