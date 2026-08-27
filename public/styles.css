@@ -321,7 +321,31 @@ main {
   perspective: 900px;
   font-family: 'Baloo 2', sans-serif;
   margin-bottom: 2.75rem;
+  animation: gift-pulse 2.6s ease-in-out infinite;
 }
+
+.gift-box:hover {
+  animation-play-state: paused;
+}
+
+.gift-box[aria-expanded="true"] {
+  animation: none;
+  filter: none;
+}
+
+@keyframes gift-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(255, 224, 168, 0));
+  }
+  50% {
+    transform: scale(1.035);
+    filter: drop-shadow(0 0 16px rgba(255, 224, 168, 0.55));
+  }
+}
+
+.gift[data-gift="2"] .gift-box { animation-delay: 0.35s; }
+.gift[data-gift="3"] .gift-box { animation-delay: 0.7s; }
 
 .gift[data-gift="1"] .gift-box { --box-color: var(--coral); --ribbon-color: #ffe066; }
 .gift[data-gift="2"] .gift-box { --box-color: var(--teal); --ribbon-color: #fff3b0; }
