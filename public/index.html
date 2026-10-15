@@ -1,107 +1,806 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Catherine's Birthday Presents</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kelvin's Keeper Lottery</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+/* Layout: broadcast control room. One centered column per screen, a scoreboard strip on top,
+   the reveal takes over the whole screen like a lower-third gone full frame. Dark only, by design. */
+:root{
+  --bg:#06080d;
+  --panel:#0d121c;
+  --panel-2:#131a28;
+  --line:#22304a;
+  --fg:#eef2fa;
+  --muted:#8693ad;
+  --orange:#ff7a1a;      /* ball leather */
+  --orange-soft:rgba(255,122,26,.18);
+  --blue:#45b8ff;        /* arena LED */
+  --blue-soft:rgba(69,184,255,.16);
+  --led:#ff3b30;         /* shot clock */
+  --ok:#3ddc97;
+  --danger:#ff5a5f;
+
+  --f-display:"Big Shoulders Display","Oswald","Impact","Arial Narrow",sans-serif;
+  --f-label:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;
+  --f-body:"Barlow","Segoe UI",system-ui,-apple-system,sans-serif;
+
+  --r:10px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{min-height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 600px at 50% -200px, rgba(69,184,255,.10), transparent 70%),
+    radial-gradient(900px 500px at 50% 120%, rgba(255,122,26,.08), transparent 70%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--fg);
+  font-family:var(--f-body);
+  font-size:16px;
+  line-height:1.5;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 140px}
+
+/* ---------- Top strip ---------- */
+.strip{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-block:10px;border-bottom:1px solid var(--line);margin-bottom:28px;
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-label);font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;font-size:14px}
+.brand .ball{width:18px;height:18px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #ffa45c, var(--orange) 60%, #b84c00);
+  box-shadow:0 0 12px var(--orange-soft), 0 0 2px var(--orange)}
+.live{font-family:var(--f-label);font-weight:700;letter-spacing:.14em;font-size:13px;
+  text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.live.on{color:var(--led)}
+.live.on i{background:var(--led);box-shadow:0 0 10px var(--led);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;
+  font-family:var(--f-label);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px;
+  color:var(--muted);cursor:pointer}
+.iconbtn:hover{color:var(--fg);border-color:var(--muted)}
+.strip-right{display:flex;align-items:center;gap:12px}
+
+/* ---------- Screens ---------- */
+.screen{animation:screenIn .5s cubic-bezier(.2,.8,.2,1) both}
+.screen.leaving{animation:screenOut .25s ease-in both}
+@keyframes screenIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes screenOut{to{opacity:0;transform:translateY(-10px)}}
+
+.eyebrow{font-family:var(--f-label);font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  font-size:13px;color:var(--blue)}
+h1,h2{font-family:var(--f-display);font-weight:900;text-transform:uppercase;line-height:.92;
+  letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:clamp(44px, 9vw, 92px)}
+h1 .hl{color:var(--orange);text-shadow:0 0 28px rgba(255,122,26,.45)}
+.lede{color:var(--muted);max-width:62ch;margin:14px 0 0;font-size:17px}
+.lede b{color:var(--fg);font-weight:600}
+
+/* ---------- Entry ---------- */
+.entry-head{display:grid;gap:6px;margin-bottom:24px}
+.entry-tools{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 26px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr));gap:14px}
+.team{
+  background:linear-gradient(180deg, var(--panel-2), var(--panel));
+  border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:8px;
+}
+.team-top{display:flex;align-items:center;gap:10px}
+.team-no{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1;color:var(--line);
+  min-width:2ch;font-variant-numeric:tabular-nums}
+.team.done .team-no{color:var(--orange)}
+.field{
+  width:100%;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:7px;
+  padding:9px 11px;font-size:16px;transition:border-color .15s, box-shadow .15s;
+}
+.field::placeholder{color:#4c5873}
+.field:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.field.team-name{font-family:var(--f-label);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
+.field.missing{border-color:var(--danger);box-shadow:0 0 0 3px rgba(255,90,95,.15)}
+.prow{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px}
+.pchip{font-family:var(--f-label);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  text-align:center;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 0;line-height:1.2}
+.pchip b{display:block;font-family:var(--f-display);font-size:18px;color:var(--fg)}
+
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:rgba(6,8,13,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+  padding-top:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+.dock-in{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.count{font-family:var(--f-label);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--muted)}
+.count b{font-family:var(--f-display);font-size:30px;color:var(--fg);font-variant-numeric:tabular-nums;letter-spacing:0;margin-right:4px}
+.msg{flex-basis:100%;margin:0;font-size:14px;color:var(--danger);min-height:0}
+.msg:empty{display:none}
+.confirm-text{margin:0;font-size:15px;max-width:52ch}
+.confirm-text b{color:var(--orange)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap}
+
+.btn{
+  appearance:none;border:0;border-radius:999px;cursor:pointer;
+  font-family:var(--f-display);font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+  font-size:20px;padding:12px 26px;line-height:1;
+  transition:transform .12s, box-shadow .2s, background .2s, opacity .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--orange);color:#140800;box-shadow:0 0 0 1px rgba(255,160,90,.6) inset, 0 8px 30px rgba(255,122,26,.35)}
+.btn-primary:hover{box-shadow:0 0 0 1px rgba(255,190,130,.8) inset, 0 8px 40px rgba(255,122,26,.55)}
+.btn-primary:disabled{opacity:.3;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:transparent;color:var(--fg);border:1px solid var(--line);font-size:16px;padding:10px 18px}
+.btn-ghost:hover{border-color:var(--muted)}
+.btn-sm{font-family:var(--f-label);font-weight:700;font-size:14px;letter-spacing:.1em;padding:9px 16px}
+
+/* ---------- Draft ---------- */
+.tracker{display:grid;grid-template-columns:repeat(5, minmax(0,1fr));gap:6px;margin-bottom:34px}
+.slot{
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0;background:var(--panel);
+  display:grid;gap:2px;transition:border-color .3s, background .3s;
+}
+.slot .k{font-family:var(--f-label);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.slot .v{font-family:var(--f-label);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#4c5873}
+.slot.now{border-color:var(--orange);background:linear-gradient(180deg, var(--orange-soft), var(--panel));box-shadow:0 0 22px rgba(255,122,26,.18)}
+.slot.now .k{color:var(--orange)}
+.slot.now .v{color:var(--fg)}
+.slot.done .k{color:var(--blue)}
+.slot.done .v{color:var(--fg)}
+
+.stage{text-align:center;display:grid;justify-items:center;gap:6px}
+.pot-title{font-size:clamp(88px, 22vw, 190px);line-height:.85;margin-top:6px}
+.pot-title span{color:var(--orange);text-shadow:0 0 40px rgba(255,122,26,.55), 0 0 2px #ffb27a}
+.pot-sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+.prompt{font-family:var(--f-label);font-weight:700;font-size:clamp(22px,4.5vw,30px);letter-spacing:.06em;
+  text-transform:uppercase;margin:26px 0 14px}
+.keypad{display:grid;grid-template-columns:repeat(6, 1fr);gap:10px;width:100%;max-width:560px}
+.key{
+  aspect-ratio:1;max-width:100%;border-radius:12px;border:1px solid var(--line);background:var(--panel);
+  font-family:var(--f-display);font-weight:800;font-size:clamp(28px,6vw,40px);cursor:pointer;
+  font-variant-numeric:tabular-nums;transition:transform .12s, border-color .15s, background .15s, box-shadow .2s, color .15s;
+}
+.key:hover{border-color:var(--blue);color:var(--blue)}
+.key[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#140800;
+  box-shadow:0 0 0 4px var(--orange-soft), 0 0 34px rgba(255,122,26,.55);transform:scale(1.06)}
+.stage .btn-primary{margin-top:26px;min-width:240px}
+.hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+
+/* ---------- Reveal overlay ---------- */
+.reveal{
+  position:fixed;inset:0;z-index:50;display:grid;place-items:center;text-align:center;
+  background:radial-gradient(circle at 50% 45%, #121a2c 0%, #05070b 70%);
+  padding-top:calc(24px + env(safe-area-inset-top, 0px));
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  overflow:hidden;animation:fadeIn .3s both;
+}
+@keyframes fadeIn{from{opacity:0}}
+.reveal::before{ /* sweeping arena light */
+  content:"";position:absolute;inset:-50%;
+  background:conic-gradient(from 0deg, transparent 0 40deg, rgba(69,184,255,.07) 50deg, transparent 60deg 180deg, rgba(255,122,26,.07) 190deg, transparent 200deg);
+  animation:sweep 6s linear infinite;pointer-events:none;
+}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.rv-inner{position:relative;z-index:2;display:grid;justify-items:center;gap:14px;width:100%;max-width:900px}
+.rv-head{font-family:var(--f-label);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-size:15px}
+.rv-head b{color:var(--orange);font-size:18px}
+
+.clock{
+  width:min(58vw, 240px);aspect-ratio:1;max-width:100%;border-radius:22px;display:grid;place-items:center;
+  background:#0a0303;border:3px solid #2a0b0a;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.9), 0 0 60px rgba(255,59,48,.25);
+  position:relative;
+}
+.clock::after{content:"";position:absolute;inset:-14px;border-radius:30px;border:2px solid var(--led);opacity:0}
+.clock.tick::after{animation:ring .8s ease-out}
+@keyframes ring{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.25)}}
+.clock span{
+  font-family:var(--f-display);font-weight:900;font-size:min(42vw, 180px);line-height:1;color:var(--led);
+  text-shadow:0 0 18px rgba(255,59,48,.9), 0 0 50px rgba(255,59,48,.5);
+  font-variant-numeric:tabular-nums;
+}
+.clock.tick span{animation:digit .8s cubic-bezier(.2,.9,.2,1)}
+@keyframes digit{from{transform:scale(1.5);opacity:0}25%{opacity:1}to{transform:scale(1)}}
+
+.reel{
+  font-family:var(--f-display);font-weight:800;text-transform:uppercase;
+  font-size:clamp(34px, 8vw, 72px);line-height:1;color:var(--muted);
+  min-height:1.2em;filter:blur(.6px);letter-spacing:.02em;max-width:100%;overflow-wrap:anywhere;
+}
+.reel.slow{filter:none;color:#c5cde0}
+
+.result{display:grid;justify-items:center;gap:10px}
+.rv-label{font-family:var(--f-label);font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);font-size:15px}
+.rv-name{
+  font-family:var(--f-display);font-weight:900;text-transform:uppercase;
+  font-size:clamp(48px, 13vw, 140px);line-height:.88;max-width:100%;overflow-wrap:anywhere;text-wrap:balance;
+  color:#fff;text-shadow:0 0 30px rgba(255,122,26,.75), 0 0 80px rgba(255,122,26,.45), 0 0 2px #ffd2b0;
+  animation:slam .7s cubic-bezier(.15,1.4,.3,1) both;
+}
+@keyframes slam{from{transform:scale(2.4);opacity:0;filter:blur(12px)}to{transform:none;opacity:1;filter:none}}
+.rv-team{font-family:var(--f-label);font-weight:600;font-size:clamp(18px,4vw,26px);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  animation:rise .5s .45s both}
+.rv-team span{color:var(--fg)}
+.rv-next{margin-top:22px;animation:rise .5s .9s both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+.flash{position:fixed;inset:0;background:#fff;z-index:60;pointer-events:none;animation:flash .6s ease-out both}
+@keyframes flash{from{opacity:.85}to{opacity:0}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+
+/* ---------- Results ---------- */
+.res-head{text-align:center;display:grid;gap:8px;justify-items:center;margin-bottom:26px}
+.card{
+  max-width:640px;margin:0 auto;border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg, var(--panel-2), var(--panel));
+  border:1px solid var(--line);
+  box-shadow:0 0 0 1px rgba(255,122,26,.08), 0 30px 80px rgba(0,0,0,.5), 0 0 60px rgba(255,122,26,.08);
+}
+.card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:16px 20px;
+  border-bottom:1px solid var(--line);background:linear-gradient(90deg, var(--orange-soft), transparent 70%)}
+.card-top .t{font-family:var(--f-display);font-weight:900;font-size:26px;text-transform:uppercase;letter-spacing:.02em}
+.card-top .s{font-family:var(--f-label);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-size:13px}
+.roster{list-style:none;margin:0;padding:0}
+.roster li{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:14px;padding:14px 20px;
+  border-bottom:1px solid var(--line);animation:rise .45s both}
+.roster li:last-child{border-bottom:0}
+.pot-badge{font-family:var(--f-label);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);text-align:center;line-height:1.1}
+.pot-badge b{display:block;font-family:var(--f-display);font-size:34px;color:var(--orange);letter-spacing:0;line-height:1}
+.who{min-width:0}
+.who .n{font-family:var(--f-display);font-weight:800;font-size:clamp(22px,5vw,28px);text-transform:uppercase;line-height:1.05;overflow-wrap:anywhere}
+.who .tm{color:var(--muted);font-size:14px}
+.pickno{font-family:var(--f-label);font-weight:700;font-size:13px;letter-spacing:.08em;color:var(--muted);white-space:nowrap;
+  border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.share{display:grid;justify-items:center;gap:10px;margin-top:26px}
+.share-msg{font-size:14px;color:var(--ok);margin:0;min-height:1.5em}
+.share-msg.err{color:var(--muted)}
+#shareFallback{width:100%;max-width:640px;min-height:170px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:14px}
+
+.audit{max-width:1080px;margin:44px auto 0;border-top:1px solid var(--line);padding-top:18px}
+.audit summary{cursor:pointer;font-family:var(--f-label);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-size:14px}
+.audit summary:hover{color:var(--fg)}
+.audit p{color:var(--muted);font-size:14px}
+.tablewrap{overflow-x:auto;margin-top:12px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-label);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);background:var(--panel)}
+td .num{font-family:var(--f-display);font-weight:800;color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
+td .tm{color:var(--muted);display:block;font-size:12px}
+td.hit{background:var(--orange-soft)}
+td.hit .num{color:var(--orange)}
+
+@media (max-width:560px){
+  .keypad{grid-template-columns:repeat(4, 1fr);gap:8px}
+  .tracker{gap:4px}
+  .slot{padding:6px}
+  .slot .v{font-size:12px}
+  .roster li{grid-template-columns:50px 1fr;padding:12px 14px}
+  .pickno{grid-column:2;justify-self:start}
+  .card-top{padding:14px}
+  .dock .btn{font-size:18px;padding:12px 20px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
 </head>
 <body>
 
-<div class="confetti-field" id="confettiField" aria-hidden="true"></div>
-
-<main>
-
-  <section class="screen intro-screen" id="introScreen">
-    <p class="greeting">Hey, Cat!</p>
-    <div class="balloons" aria-hidden="true">
-      <div class="balloon balloon-4">
-        <span class="balloon-number">4</span>
-        <svg class="balloon-string" viewBox="0 0 20 100" preserveAspectRatio="none">
-          <path d="M10 0 C 2 20, 18 35, 10 55 C 2 75, 18 85, 10 100" />
-        </svg>
-      </div>
-      <div class="balloon balloon-7">
-        <span class="balloon-number">7</span>
-        <svg class="balloon-string" viewBox="0 0 20 100" preserveAspectRatio="none">
-          <path d="M10 0 C 18 20, 2 35, 10 55 C 18 75, 2 85, 10 100" />
-        </svg>
-      </div>
+<div class="wrap">
+  <div class="strip">
+    <div class="brand"><span class="ball" aria-hidden="true"></span>Keeper Lottery</div>
+    <div class="strip-right">
+      <button class="iconbtn" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
+      <div class="live" id="live"><i></i><span id="liveText">Setup</span></div>
     </div>
-    <p class="eyebrow">🎉 It's Your Birthday! 🎉</p>
-    <h1>Happy B-Day, Baby!</h1>
-    <p class="subtitle">Just a few small things to celebrate...</p>
-    <button type="button" class="cta-button" id="openGiftsBtn">Open your gifts</button>
+  </div>
+
+  <!-- ===== ENTRY ===== -->
+  <section class="screen" id="screen-entry">
+    <div class="entry-head">
+      <div class="eyebrow">Commissioner setup</div>
+      <h1>Kelvin's <span class="hl">Keeper</span> Lottery</h1>
+      <p class="lede">Enter each team's 5 unprotected players <b>best to worst</b> by Hashtag Basketball rank.
+        Row 1 from every team forms Pot 1, row 2 forms Pot 2, and so on. When you lock it in, each pot is shuffled
+        and numbered 1 through 11. Nobody sees which number hides which player.</p>
+    </div>
+    <div class="entry-tools">
+      <button class="btn btn-ghost btn-sm" id="sampleBtn" type="button">Reload league keepers</button>
+      <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Clear all</button>
+    </div>
+    <form id="entryForm" novalidate autocomplete="off">
+      <div class="team-grid" id="teamGrid"></div>
+    </form>
   </section>
 
-  <section class="screen gifts-screen is-hidden" id="giftsScreen">
-
-    <header class="gifts-header">
-      <h2 tabindex="-1">Go Ahead, Open Them</h2>
-      <p class="subtitle">Tap each one to see what's inside</p>
-    </header>
-
-    <div class="gifts" id="gifts">
-
-      <section class="gift" data-gift="1">
-        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-1">
-          <span class="box-lid"></span>
-          <span class="box-body">
-            <span class="ribbon-v"></span>
-            <span class="ribbon-h"></span>
-            <span class="bow">🎀</span>
-          </span>
-          <span class="gift-label">Gift #1</span>
-        </button>
-        <div class="reveal" id="reveal-1">
-          <img src="images/license.jpg" alt="Catherine holding her firearms possession and acquisition licence" loading="lazy">
-          <p class="reveal-caption">🎓 Your gun safety course: let's get you licensed!</p>
-        </div>
-      </section>
-
-      <section class="gift" data-gift="2">
-        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-2">
-          <span class="box-lid"></span>
-          <span class="box-body">
-            <span class="ribbon-v"></span>
-            <span class="ribbon-h"></span>
-            <span class="bow">🎀</span>
-          </span>
-          <span class="gift-label">Gift #2</span>
-        </button>
-        <div class="reveal" id="reveal-2">
-          <img src="images/ammo.jpg" alt="A pile of shotgun shells" loading="lazy">
-          <p class="reveal-caption">💥 Boxes and boxes of &ldquo;bang&rdquo;!</p>
-        </div>
-      </section>
-
-      <section class="gift" data-gift="3">
-        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-3">
-          <span class="box-lid"></span>
-          <span class="box-body">
-            <span class="ribbon-v"></span>
-            <span class="ribbon-h"></span>
-            <span class="bow">🎀</span>
-          </span>
-          <span class="gift-label">Gift #3</span>
-        </button>
-        <div class="reveal" id="reveal-3">
-          <img src="images/shooting.jpg" alt="Catherine shooting clay pigeons outdoors" loading="lazy">
-          <p class="reveal-caption">🎯 A day of clay shooting, just the two of us</p>
-        </div>
-      </section>
-
+  <!-- ===== DRAFT ===== -->
+  <section class="screen" id="screen-draft" hidden>
+    <div class="tracker" id="tracker"></div>
+    <div class="stage">
+      <div class="eyebrow" id="roundLabel">Round 1 of 5</div>
+      <h2 class="pot-title">Pot <span id="potNum">1</span></h2>
+      <p class="pot-sub" id="potSub"></p>
+      <p class="prompt">Pick a number, 1 through 11</p>
+      <div class="keypad" id="keypad" role="group" aria-label="Pick a number"></div>
+      <button class="btn btn-primary" id="revealBtn" type="button" disabled>Pick a number</button>
+      <p class="hint">Each pot is shuffled on its own. Any number is fair game every round.</p>
     </div>
-
-    <p class="footer-note">Here's to another great year!<br>❤️ Happy Birthday, Cat!! ❤️</p>
-
   </section>
 
-</main>
+  <!-- ===== RESULTS ===== -->
+  <section class="screen" id="screen-results" hidden>
+    <div class="res-head">
+      <div class="eyebrow">Lottery complete</div>
+      <h1>Kelvin's <span class="hl">Keepers</span></h1>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="t">Keeper roster</span><span class="s">5 pots · 5 picks</span></div>
+      <ol class="roster" id="roster"></ol>
+    </div>
+    <div class="share">
+      <button class="btn btn-primary" id="shareBtn" type="button">Share Results</button>
+      <p class="share-msg" id="shareMsg" role="status"></p>
+      <textarea id="shareFallback" readonly hidden aria-label="Results text to copy"></textarea>
+    </div>
+    <details class="audit">
+      <summary>Show the full number board</summary>
+      <p>Every pot's hidden numbers, for the league's records. Kelvin's picks are highlighted.</p>
+      <div class="tablewrap"><table id="auditTable"></table></div>
+    </details>
+  </section>
+</div>
 
-<script src="script.js"></script>
+<!-- Entry dock -->
+<div class="dock" id="dock">
+  <div class="dock-in" id="dockMain">
+    <div class="count"><b id="filled">0</b>/ 66 fields filled</div>
+    <button class="btn btn-primary" id="lockBtn" type="button">Lock It In</button>
+    <p class="msg" id="entryMsg" role="alert"></p>
+  </div>
+  <div class="dock-in" id="dockConfirm" hidden>
+    <p class="confirm-text">Lock <b>55 players</b> from <b>11 teams</b> and shuffle the pots? Nothing can be edited after this.</p>
+    <div class="btnrow">
+      <button class="btn btn-ghost" id="cancelLock" type="button">Go back</button>
+      <button class="btn btn-primary" id="confirmLock" type="button">Lock &amp; shuffle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reveal overlay -->
+<div class="reveal" id="reveal" hidden aria-live="polite">
+  <canvas id="confetti"></canvas>
+  <div class="rv-inner">
+    <div class="rv-head" id="rvHead"></div>
+    <div class="clock" id="rvClock"><span id="rvDigit">3</span></div>
+    <div class="reel" id="rvReel" hidden></div>
+    <div class="result" id="rvResult" hidden>
+      <div class="rv-label" id="rvLabel"></div>
+      <div class="rv-name" id="rvName"></div>
+      <div class="rv-team">from <span id="rvTeam"></span></div>
+      <button class="btn btn-primary rv-next" id="rvNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const TEAMS = 11, PER = 5;
+  const ORD = ["Best", "Second-best", "Third-best", "Fourth-best", "Fifth-best"];
+  const $ = s => document.querySelector(s);
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  const state = { phase: "entry", teams: [], pots: [], round: 0, picks: [], selected: null, busy: false, sound: true };
+
+  /* ---------- Randomness ---------- */
+  function rint(n) {
+    if (window.crypto && crypto.getRandomValues) {
+      const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1);
+      do { crypto.getRandomValues(a); } while (a[0] >= lim);
+      return a[0] % n;
+    }
+    return Math.floor(Math.random() * n);
+  }
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) { const j = rint(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+    return arr;
+  }
+
+  /* ---------- Sound ---------- */
+  let ac;
+  function tone(freq, dur, type = "square", vol = 0.05, when = 0) {
+    if (!state.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) { /* audio is optional */ }
+  }
+  const horn = () => { tone(233, 0.9, "sawtooth", 0.06); tone(311, 0.9, "sawtooth", 0.05); tone(466, 0.9, "square", 0.02); };
+  $("#soundBtn").addEventListener("click", e => {
+    state.sound = !state.sound;
+    e.currentTarget.textContent = state.sound ? "Sound on" : "Sound off";
+    e.currentTarget.setAttribute("aria-pressed", String(state.sound));
+  });
+
+  /* ---------- Screens ---------- */
+  function setLive(text, on) { $("#liveText").textContent = text; $("#live").classList.toggle("on", !!on); }
+  async function go(phase) {
+    const cur = document.querySelector(".screen:not([hidden])");
+    if (cur) { cur.classList.add("leaving"); await sleep(reduced ? 0 : 240); cur.hidden = true; cur.classList.remove("leaving"); }
+    state.phase = phase;
+    const next = $("#screen-" + phase);
+    next.hidden = false;
+    next.style.animation = "none"; void next.offsetWidth; next.style.animation = "";
+    $("#dock").hidden = phase !== "entry";
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  }
+
+  /* ---------- Entry ---------- */
+  const grid = $("#teamGrid");
+  for (let t = 0; t < TEAMS; t++) {
+    let rows = "";
+    for (let p = 0; p < PER; p++) {
+      rows += `<div class="prow"><span class="pchip" aria-hidden="true">Pot<b>${p + 1}</b></span>
+        <input class="field player" id="t${t}p${p}" data-t="${t}" data-p="${p}" placeholder="${ORD[p]} player"
+          aria-label="Team ${t + 1}, ${ORD[p].toLowerCase()} player (Pot ${p + 1})"></div>`;
+    }
+    grid.insertAdjacentHTML("beforeend", `<div class="team" id="team${t}">
+      <div class="team-top"><span class="team-no">${String(t + 1).padStart(2, "0")}</span>
+      <input class="field team-name" id="t${t}name" placeholder="Team ${t + 1} name" aria-label="Team ${t + 1} name"></div>
+      ${rows}</div>`);
+  }
+  const allFields = () => [...grid.querySelectorAll(".field")];
+
+  function updateCount() {
+    const f = allFields();
+    $("#filled").textContent = f.filter(i => i.value.trim()).length;
+    for (let t = 0; t < TEAMS; t++) {
+      const done = [...$("#team" + t).querySelectorAll(".field")].every(i => i.value.trim());
+      $("#team" + t).classList.toggle("done", done);
+    }
+  }
+  grid.addEventListener("input", e => {
+    if (e.target.classList.contains("field")) {
+      e.target.classList.remove("missing");
+      updateCount();
+      if (!$("#dockConfirm").hidden) showConfirm(false);
+    }
+  });
+  $("#entryForm").addEventListener("submit", e => e.preventDefault());
+  // Enter jumps to the next field instead of submitting
+  grid.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const f = allFields(), i = f.indexOf(e.target);
+    if (i > -1 && i < f.length - 1) f[i + 1].focus();
+  });
+
+  // League keepers from Keepers-1.xlsx. LEAGUE_POTS[p][t] is team t's player in row p+1.
+  const LEAGUE_TEAMS = ["BSOD", "Eastern Promises", "Tropics", "Boogies", "Curryous Klay", "QuickleyIsTRASH",
+    "Knicks", "AVINJUREDS", "The Basketball Team", "Paul Rudd All Stars", "What Does the Cat Say"];
+  const LEAGUE_POTS = [
+    ["Chet Holmgren", "Luka Doncic", "Alex Sarr", "Tyler Herro", "Domantas Sabonis", "Brandon Miller", "Karl Anthony Towns", "Jaren Jackson Jr.", "Tyrese Haliburton", "Cade Cunningham", "Jalen Williams"],
+    ["Dylan Harper", "Nikola Jokic", "Matas Buzelis", "James Harden", "Kyrie Irving", "Paolo Banchero", "LaMelo Ball", "Anthony Davis", "Austin Reaves", "Scottie Barnes", "Trae Young"],
+    ["Amen Thompson", "Tyrese Maxey", "Bam Adebayo", "Derik Queen", "Jalen Green", "Lauri Markkanen", "Zion Williamson", "Pascal Siakam", "Kon Knueppel", "Franz Wagner", "Jalen Duren"],
+    ["VJ Edgecombe", "Donovan Mitchell", "Jaylen Brown", "Isaiah Hartenstein", "Coby White", "Zach Edey", "Julius Randle", "Ja Morant", "Kevin Durant", "Deni Avdija", "Donovan Clingan"],
+    ["Josh Giddey", "Stephen Curry", "Onyeka Okongwu", "Kawhi Leonard", "Norman Powell", "Reed Sheppard", "Damian Lillard", "Jarrett Allen", "Joel Embiid", "Darius Garland", "Walker Kessler"]
+  ];
+  function loadLeague() {
+    for (let t = 0; t < TEAMS; t++) {
+      $(`#t${t}name`).value = LEAGUE_TEAMS[t];
+      for (let p = 0; p < PER; p++) $(`#t${t}p${p}`).value = LEAGUE_POTS[p][t];
+    }
+    allFields().forEach(f => f.classList.remove("missing"));
+    $("#entryMsg").textContent = "";
+    updateCount();
+  }
+  $("#sampleBtn").addEventListener("click", loadLeague);
+  loadLeague();
+  $("#clearBtn").addEventListener("click", () => {
+    allFields().forEach(f => { f.value = ""; f.classList.remove("missing"); });
+    $("#entryMsg").textContent = "";
+    showConfirm(false);
+    updateCount();
+  });
+
+  function showConfirm(on) {
+    $("#dockMain").hidden = on; $("#dockConfirm").hidden = !on;
+    if (on) $("#confirmLock").focus();
+  }
+
+  $("#lockBtn").addEventListener("click", () => {
+    const f = allFields(), empty = f.filter(i => !i.value.trim());
+    f.forEach(i => i.classList.toggle("missing", !i.value.trim()));
+    if (empty.length) {
+      $("#entryMsg").textContent = `${empty.length} ${empty.length === 1 ? "field is" : "fields are"} empty. Every team needs a name and all 5 players before you can lock.`;
+      empty[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      empty[0].focus({ preventScroll: true });
+      return;
+    }
+    const names = f.filter(i => i.classList.contains("team-name")).map(i => i.value.trim().toLowerCase());
+    const dupe = names.find((n, i) => names.indexOf(n) !== i);
+    if (dupe) {
+      $("#entryMsg").textContent = "Two teams share the same name. Give each team a unique name so the results read clearly.";
+      return;
+    }
+    $("#entryMsg").textContent = "";
+    showConfirm(true);
+  });
+  $("#cancelLock").addEventListener("click", () => { showConfirm(false); $("#lockBtn").focus(); });
+
+  $("#confirmLock").addEventListener("click", () => {
+    state.teams = [];
+    for (let t = 0; t < TEAMS; t++) {
+      const players = [];
+      for (let p = 0; p < PER; p++) players.push($(`#t${t}p${p}`).value.trim());
+      state.teams.push(Object.freeze({ name: $(`#t${t}name`).value.trim(), players: Object.freeze(players) }));
+    }
+    Object.freeze(state.teams);
+    state.pots = [];
+    for (let p = 0; p < PER; p++) {
+      const pot = shuffle(state.teams.map(t => ({ player: t.players[p], team: t.name })));
+      state.pots.push(Object.freeze(pot.map((x, i) => Object.freeze({ ...x, num: i + 1 }))));
+    }
+    Object.freeze(state.pots);
+    allFields().forEach(i => i.disabled = true);
+    tone(523, .12, "square", .05); tone(784, .2, "square", .05, .1);
+    state.round = 0; state.picks = [];
+    renderDraft();
+    setLive("Live", true);
+    go("draft");
+  });
+
+  /* ---------- Draft ---------- */
+  function renderTracker() {
+    const tr = $("#tracker"); tr.innerHTML = "";
+    for (let p = 0; p < PER; p++) {
+      const pick = state.picks[p];
+      const el = document.createElement("div");
+      el.className = "slot" + (pick ? " done" : p === state.round ? " now" : "");
+      const k = document.createElement("span"); k.className = "k"; k.textContent = "Pot " + (p + 1);
+      const v = document.createElement("span"); v.className = "v";
+      v.textContent = pick ? pick.player : p === state.round ? "On the clock" : "Locked";
+      el.append(k, v); tr.append(el);
+    }
+  }
+  function renderDraft() {
+    state.selected = null;
+    renderTracker();
+    const p = state.round;
+    $("#roundLabel").textContent = `Round ${p + 1} of ${PER}`;
+    $("#potNum").textContent = p + 1;
+    $("#potSub").textContent = `${ORD[p]} unprotected player from each of the 11 teams`;
+    const kp = $("#keypad"); kp.innerHTML = "";
+    for (let n = 1; n <= TEAMS; n++) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "key"; b.textContent = n; b.dataset.n = n;
+      b.setAttribute("aria-pressed", "false"); b.setAttribute("aria-label", "Number " + n);
+      kp.append(b);
+    }
+    updateRevealBtn();
+  }
+  function updateRevealBtn() {
+    const b = $("#revealBtn");
+    b.disabled = state.selected == null;
+    b.textContent = state.selected == null ? "Pick a number" : `Reveal #${state.selected}`;
+  }
+  $("#keypad").addEventListener("click", e => {
+    const k = e.target.closest(".key"); if (!k || state.busy) return;
+    state.selected = +k.dataset.n;
+    document.querySelectorAll(".key").forEach(x => x.setAttribute("aria-pressed", String(x === k)));
+    tone(880 + state.selected * 20, .06, "triangle", .04);
+    updateRevealBtn();
+  });
+  // Number keys on a keyboard also pick (type 1 then 0 quickly for 10, 1 then 1 for 11)
+  let keyBuf = "", keyTimer;
+  document.addEventListener("keydown", e => {
+    if (state.phase !== "draft" || state.busy || !/^\d$/.test(e.key)) return;
+    keyBuf += e.key; clearTimeout(keyTimer);
+    keyTimer = setTimeout(() => { keyBuf = ""; }, 700);
+    let n = +keyBuf; if (n < 1 || n > 11) { keyBuf = e.key; n = +e.key; }
+    if (n >= 1 && n <= 11) document.querySelector(`.key[data-n="${n}"]`).click();
+  });
+
+  $("#revealBtn").addEventListener("click", runReveal);
+
+  /* ---------- Reveal ---------- */
+  async function runReveal() {
+    if (state.busy || state.selected == null) return;
+    state.busy = true;
+    const p = state.round, n = state.selected, pick = state.pots[p][n - 1];
+    const ov = $("#reveal"), clock = $("#rvClock"), digit = $("#rvDigit"), reel = $("#rvReel"), res = $("#rvResult");
+    $("#rvHead").innerHTML = "";
+    $("#rvHead").append(`Pot ${p + 1} · Number `, Object.assign(document.createElement("b"), { textContent: n }));
+    res.hidden = true; reel.hidden = true; clock.hidden = false; reel.classList.remove("slow");
+    ov.hidden = false;
+    document.body.style.overflow = "hidden";
+
+    // Shot clock countdown
+    for (const d of [3, 2, 1]) {
+      digit.textContent = d;
+      clock.classList.remove("tick"); void clock.offsetWidth; clock.classList.add("tick");
+      tone(d === 1 ? 990 : 660, .18, "square", .06);
+      if (navigator.vibrate) try { navigator.vibrate(40); } catch (e) {}
+      await sleep(reduced ? 300 : 900);
+    }
+    clock.hidden = true;
+
+    // Name reel that slows down before landing
+    if (!reduced) {
+      reel.hidden = false;
+      const names = state.pots[p].map(x => x.player);
+      let last = -1;
+      const spins = 22;
+      for (let i = 0; i < spins; i++) {
+        let j; do { j = rint(names.length); } while (j === last && names.length > 1);
+        last = j;
+        reel.textContent = names[j];
+        if (i > spins - 7) reel.classList.add("slow");
+        tone(1400 - i * 30, .03, "triangle", .025);
+        await sleep(45 + Math.pow(i / spins, 3) * 320);
+      }
+      reel.hidden = true;
+      await sleep(220);
+    }
+
+    // Impact
+    $("#rvLabel").textContent = `Kelvin's Pot ${p + 1} keeper`;
+    $("#rvName").textContent = pick.player;
+    $("#rvTeam").textContent = pick.team;
+    const nm = $("#rvName"); nm.style.animation = "none"; void nm.offsetWidth; nm.style.animation = "";
+    res.hidden = false;
+    if (!reduced) {
+      const fl = document.createElement("div"); fl.className = "flash"; document.body.append(fl);
+      setTimeout(() => fl.remove(), 700);
+      confetti();
+    }
+    horn();
+    if (navigator.vibrate) try { navigator.vibrate([80, 40, 160]); } catch (e) {}
+
+    state.picks.push({ pot: p + 1, num: n, player: pick.player, team: pick.team });
+    state.round++;
+    renderTracker();
+    $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : "See Kelvin's keepers";
+    setTimeout(() => $("#rvNext").focus({ preventScroll: true }), reduced ? 0 : 900);
+  }
+
+  $("#rvNext").addEventListener("click", () => {
+    $("#reveal").hidden = true;
+    document.body.style.overflow = "";
+    stopConfetti();
+    state.busy = false;
+    if (state.round < PER) {
+      renderDraft();
+      const st = $("#screen-draft"); st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
+      window.scrollTo({ top: 0 });
+    } else {
+      renderResults();
+      setLive("Final", false);
+      go("results");
+    }
+  });
+
+  /* ---------- Confetti ---------- */
+  let confRAF = null;
+  function confetti() {
+    const cv = $("#confetti"), ctx = cv.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2);
+    const W = cv.width = innerWidth * dpr, H = cv.height = innerHeight * dpr;
+    const colors = ["#ff7a1a", "#ffb27a", "#45b8ff", "#ffffff", "#ffd23f"];
+    const parts = [];
+    for (let i = 0; i < 180; i++) {
+      const side = i % 2 ? 1 : -1;
+      parts.push({
+        x: W / 2 + side * W * 0.05, y: H * 0.55,
+        vx: side * (4 + Math.random() * 14) * dpr, vy: -(10 + Math.random() * 16) * dpr,
+        w: (6 + Math.random() * 7) * dpr, h: (3 + Math.random() * 5) * dpr,
+        r: Math.random() * 6, vr: (Math.random() - .5) * .4, c: colors[i % colors.length], life: 0
+      });
+    }
+    cancelAnimationFrame(confRAF);
+    const step = () => {
+      ctx.clearRect(0, 0, W, H);
+      let alive = 0;
+      for (const q of parts) {
+        q.life++; q.vy += .45 * dpr; q.vx *= .985; q.x += q.vx; q.y += q.vy; q.r += q.vr;
+        if (q.y < H + 40) alive++;
+        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r);
+        ctx.globalAlpha = Math.max(0, 1 - q.life / 200);
+        ctx.fillStyle = q.c; ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h * Math.abs(Math.cos(q.r * 2)));
+        ctx.restore();
+      }
+      if (alive) confRAF = requestAnimationFrame(step); else ctx.clearRect(0, 0, W, H);
+    };
+    step();
+  }
+  function stopConfetti() {
+    cancelAnimationFrame(confRAF);
+    const cv = $("#confetti"); cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+  }
+
+  /* ---------- Results ---------- */
+  function renderResults() {
+    const ol = $("#roster"); ol.innerHTML = "";
+    state.picks.forEach((k, i) => {
+      const li = document.createElement("li");
+      li.style.animationDelay = (i * 0.09) + "s";
+      li.innerHTML = `<div class="pot-badge">Pot<b></b></div><div class="who"><div class="n"></div><div class="tm"></div></div><span class="pickno"></span>`;
+      li.querySelector(".pot-badge b").textContent = k.pot;
+      li.querySelector(".n").textContent = k.player;
+      li.querySelector(".tm").textContent = "from " + k.team;
+      li.querySelector(".pickno").textContent = "Picked #" + k.num;
+      ol.append(li);
+    });
+
+    const tb = $("#auditTable"); tb.innerHTML = "";
+    const head = document.createElement("tr");
+    head.append(Object.assign(document.createElement("th"), { textContent: "No." }));
+    for (let p = 0; p < PER; p++) head.append(Object.assign(document.createElement("th"), { textContent: "Pot " + (p + 1) }));
+    const thead = document.createElement("thead"); thead.append(head); tb.append(thead);
+    const body = document.createElement("tbody");
+    for (let n = 1; n <= TEAMS; n++) {
+      const tr = document.createElement("tr");
+      tr.append(Object.assign(document.createElement("th"), { textContent: n }));
+      for (let p = 0; p < PER; p++) {
+        const x = state.pots[p][n - 1], td = document.createElement("td");
+        if (state.picks[p] && state.picks[p].num === n) td.className = "hit";
+        td.append(x.player, Object.assign(document.createElement("span"), { className: "tm", textContent: x.team }));
+        tr.append(td);
+      }
+      body.append(tr);
+    }
+    tb.append(body);
+  }
+
+  function shareText() {
+    const lines = ["🏀 KELVIN'S KEEPER LOTTERY RESULTS", ""];
+    state.picks.forEach(k => lines.push(`Pot ${k.pot} (picked #${k.num}): ${k.player} — from ${k.team}`));
+    lines.push("", "Welcome to the league, Kelvin.");
+    return lines.join("\n");
+  }
+  $("#shareBtn").addEventListener("click", () => {
+    const text = shareText(), msg = $("#shareMsg"), fb = $("#shareFallback");
+    const fallback = () => {
+      fb.hidden = false; fb.value = text; fb.focus(); fb.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      msg.className = "share-msg" + (ok ? "" : " err");
+      msg.textContent = ok ? "Copied to clipboard. Paste it in the league chat." : "Couldn't copy automatically. The text below is selected, so copy it from there.";
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        fb.hidden = true; msg.className = "share-msg";
+        msg.textContent = "Copied to clipboard. Paste it in the league chat.";
+      }, fallback);
+    } else fallback();
+  });
+
+  /* ---------- Guard against losing a live draft ---------- */
+  window.addEventListener("beforeunload", e => {
+    if (state.phase === "draft") { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  updateCount();
+})();
+</script>
 </body>
 </html>

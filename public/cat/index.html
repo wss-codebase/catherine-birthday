@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catherine's Birthday Presents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="confetti-field" id="confettiField" aria-hidden="true"></div>
+
+<main>
+
+  <section class="screen intro-screen" id="introScreen">
+    <p class="greeting">Hey, Cat!</p>
+    <div class="balloons" aria-hidden="true">
+      <div class="balloon balloon-4">
+        <span class="balloon-number">4</span>
+        <svg class="balloon-string" viewBox="0 0 20 100" preserveAspectRatio="none">
+          <path d="M10 0 C 2 20, 18 35, 10 55 C 2 75, 18 85, 10 100" />
+        </svg>
+      </div>
+      <div class="balloon balloon-7">
+        <span class="balloon-number">7</span>
+        <svg class="balloon-string" viewBox="0 0 20 100" preserveAspectRatio="none">
+          <path d="M10 0 C 18 20, 2 35, 10 55 C 18 75, 2 85, 10 100" />
+        </svg>
+      </div>
+    </div>
+    <p class="eyebrow">🎉 It's Your Birthday! 🎉</p>
+    <h1>Happy B-Day, Baby!</h1>
+    <p class="subtitle">Just a few small things to celebrate...</p>
+    <button type="button" class="cta-button" id="openGiftsBtn">Open your gifts</button>
+  </section>
+
+  <section class="screen gifts-screen is-hidden" id="giftsScreen">
+
+    <header class="gifts-header">
+      <h2 tabindex="-1">Go Ahead, Open Them</h2>
+      <p class="subtitle">Tap each one to see what's inside</p>
+    </header>
+
+    <div class="gifts" id="gifts">
+
+      <section class="gift" data-gift="1">
+        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-1">
+          <span class="box-lid"></span>
+          <span class="box-body">
+            <span class="ribbon-v"></span>
+            <span class="ribbon-h"></span>
+            <span class="bow">🎀</span>
+          </span>
+          <span class="gift-label">Gift #1</span>
+        </button>
+        <div class="reveal" id="reveal-1">
+          <img src="images/license.jpg" alt="Catherine holding her firearms possession and acquisition licence" loading="lazy">
+          <p class="reveal-caption">🎓 Your gun safety course: let's get you licensed!</p>
+        </div>
+      </section>
+
+      <section class="gift" data-gift="2">
+        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-2">
+          <span class="box-lid"></span>
+          <span class="box-body">
+            <span class="ribbon-v"></span>
+            <span class="ribbon-h"></span>
+            <span class="bow">🎀</span>
+          </span>
+          <span class="gift-label">Gift #2</span>
+        </button>
+        <div class="reveal" id="reveal-2">
+          <img src="images/ammo.jpg" alt="A pile of shotgun shells" loading="lazy">
+          <p class="reveal-caption">💥 Boxes and boxes of &ldquo;bang&rdquo;!</p>
+        </div>
+      </section>
+
+      <section class="gift" data-gift="3">
+        <button class="gift-box" type="button" aria-expanded="false" aria-controls="reveal-3">
+          <span class="box-lid"></span>
+          <span class="box-body">
+            <span class="ribbon-v"></span>
+            <span class="ribbon-h"></span>
+            <span class="bow">🎀</span>
+          </span>
+          <span class="gift-label">Gift #3</span>
+        </button>
+        <div class="reveal" id="reveal-3">
+          <img src="images/shooting.jpg" alt="Catherine shooting clay pigeons outdoors" loading="lazy">
+          <p class="reveal-caption">🎯 A day of clay shooting, just the two of us</p>
+        </div>
+      </section>
+
+    </div>
+
+    <p class="footer-note">Here's to another great year!<br>❤️ Happy Birthday, Cat!! ❤️</p>
+
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
