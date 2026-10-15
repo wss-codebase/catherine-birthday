@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kelvin's Keeper Lottery</title>
+<title>Kenton's Keeper Lottery</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -317,7 +317,7 @@ td.hit .num{color:var(--orange)}
   <section class="screen" id="screen-entry">
     <div class="entry-head">
       <div class="eyebrow">Commissioner setup</div>
-      <h1>Kelvin's <span class="hl">Keeper</span> Lottery</h1>
+      <h1>Kenton's <span class="hl">Keeper</span> Lottery</h1>
       <p class="lede">Enter each team's 5 unprotected players <b>best to worst</b> by Hashtag Basketball rank.
         Row 1 from every team forms Pot 1, row 2 forms Pot 2, and so on. When you lock it in, each pot is shuffled
         and numbered 1 through 11. Nobody sees which number hides which player.</p>
@@ -349,7 +349,7 @@ td.hit .num{color:var(--orange)}
   <section class="screen" id="screen-results" hidden>
     <div class="res-head">
       <div class="eyebrow">Lottery complete</div>
-      <h1>Kelvin's <span class="hl">Keepers</span></h1>
+      <h1>Kenton's <span class="hl">Keepers</span></h1>
     </div>
     <div class="card">
       <div class="card-top"><span class="t">Keeper roster</span><span class="s">5 pots · 5 picks</span></div>
@@ -362,7 +362,7 @@ td.hit .num{color:var(--orange)}
     </div>
     <details class="audit">
       <summary>Show the full number board</summary>
-      <p>Every pot's hidden numbers, for the league's records. Kelvin's picks are highlighted.</p>
+      <p>Every pot's hidden numbers, for the league's records. Kenton's picks are highlighted.</p>
       <div class="tablewrap"><table id="auditTable"></table></div>
     </details>
   </section>
@@ -665,7 +665,7 @@ td.hit .num{color:var(--orange)}
     }
 
     // Impact
-    $("#rvLabel").textContent = `Kelvin's Pot ${p + 1} keeper`;
+    $("#rvLabel").textContent = `Kenton's Pot ${p + 1} keeper`;
     $("#rvName").textContent = pick.player;
     $("#rvTeam").textContent = pick.team;
     const nm = $("#rvName"); nm.style.animation = "none"; void nm.offsetWidth; nm.style.animation = "";
@@ -681,7 +681,7 @@ td.hit .num{color:var(--orange)}
     state.picks.push({ pot: p + 1, num: n, player: pick.player, team: pick.team });
     state.round++;
     renderTracker();
-    $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : "See Kelvin's keepers";
+    $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : "See Kenton's keepers";
     setTimeout(() => $("#rvNext").focus({ preventScroll: true }), reduced ? 0 : 900);
   }
 
@@ -773,9 +773,9 @@ td.hit .num{color:var(--orange)}
   }
 
   function shareText() {
-    const lines = ["🏀 KELVIN'S KEEPER LOTTERY RESULTS", ""];
+    const lines = ["🏀 KENTON'S KEEPER LOTTERY RESULTS", ""];
     state.picks.forEach(k => lines.push(`Pot ${k.pot} (picked #${k.num}): ${k.player} — from ${k.team}`));
-    lines.push("", "Welcome to the league, Kelvin.");
+    lines.push("", "Welcome to the league, Kenton.");
     return lines.join("\n");
   }
   $("#shareBtn").addEventListener("click", () => {
