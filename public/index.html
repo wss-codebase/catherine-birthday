@@ -300,35 +300,48 @@ td.hit .num{color:var(--orange)}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
+
+/* ---------- Mode banner and message screens ---------- */
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;
+  border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;margin-bottom:26px;background:var(--panel);font-size:15px;color:var(--muted)}
+.banner p{margin:0;min-width:0;flex:1 1 280px}
+.banner b{color:var(--fg)}
+.banner.practice{border-color:rgba(69,184,255,.35);background:linear-gradient(90deg, var(--blue-soft), var(--panel) 70%)}
+.banner.official{border-color:rgba(255,122,26,.5);background:linear-gradient(90deg, var(--orange-soft), var(--panel) 70%)}
+.banner.official b{color:var(--orange)}
+.msg-screen{text-align:center;display:grid;justify-items:center;gap:14px;padding-block:48px}
+.msg-screen h2{font-size:clamp(36px, 8vw, 64px)}
+.pick-err{color:var(--danger);margin:14px 0 0;font-size:15px;max-width:44ch}
+.pick-err:empty{display:none}
 </style>
 </head>
 <body>
 
+
 <div class="wrap">
   <div class="strip">
-    <div class="brand"><span class="ball" aria-hidden="true"></span>Keeper Lottery</div>
+    <div class="brand"><span class="ball" aria-hidden="true"></span>Kenton's Keeper Lottery</div>
     <div class="strip-right">
       <button class="iconbtn" id="soundBtn" type="button" aria-pressed="true">Sound on</button>
-      <div class="live" id="live"><i></i><span id="liveText">Setup</span></div>
+      <div class="live" id="live"><i></i><span id="liveText">Practice</span></div>
     </div>
   </div>
 
-  <!-- ===== ENTRY ===== -->
-  <section class="screen" id="screen-entry">
-    <div class="entry-head">
-      <div class="eyebrow">Commissioner setup</div>
-      <h1>Kenton's <span class="hl">Keeper</span> Lottery</h1>
-      <p class="lede">Enter each team's 5 unprotected players with their <b>overall Hashtag Basketball dynasty rank</b>.
-        When you lock it in, all 55 are sorted by rank: the top 11 form Pot 1, the next 11 form Pot 2, and so on.
-        Each pot is then shuffled and numbered 1 through 11. Nobody sees which number hides which player.</p>
-    </div>
-    <div class="entry-tools">
-      <button class="btn btn-ghost btn-sm" id="sampleBtn" type="button">Reload league keepers</button>
-      <button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Clear all</button>
-    </div>
-    <form id="entryForm" novalidate autocomplete="off">
-      <div class="team-grid" id="teamGrid"></div>
-    </form>
+  <div class="banner" id="banner" hidden>
+    <p id="bannerText"></p>
+    <button class="btn btn-ghost btn-sm" id="bannerBtn" type="button" hidden></button>
+  </div>
+
+  <!-- ===== LOADING / ERROR ===== -->
+  <section class="screen msg-screen" id="screen-loading" hidden>
+    <div class="eyebrow">Official draft</div>
+    <h2>Loading the draft…</h2>
+  </section>
+  <section class="screen msg-screen" id="screen-error" hidden>
+    <div class="eyebrow">Official draft</div>
+    <h2 id="errTitle">Something went wrong</h2>
+    <p class="lede" id="errText"></p>
+    <button class="btn btn-primary" id="errRetry" type="button" hidden>Try again</button>
   </section>
 
   <!-- ===== DRAFT ===== -->
@@ -341,6 +354,7 @@ td.hit .num{color:var(--orange)}
       <p class="prompt">Pick a number, 1 through 11</p>
       <div class="keypad" id="keypad" role="group" aria-label="Pick a number"></div>
       <button class="btn btn-primary" id="revealBtn" type="button" disabled>Pick a number</button>
+      <p class="pick-err" id="pickErr" role="alert"></p>
       <p class="hint">Each pot is shuffled on its own. Any number is fair game every round.</p>
     </div>
   </section>
@@ -348,8 +362,8 @@ td.hit .num{color:var(--orange)}
   <!-- ===== RESULTS ===== -->
   <section class="screen" id="screen-results" hidden>
     <div class="res-head">
-      <div class="eyebrow">Lottery complete</div>
-      <h1>Kenton's <span class="hl">Keepers</span></h1>
+      <div class="eyebrow" id="resEyebrow">Lottery complete</div>
+      <h1 id="resTitle"></h1>
     </div>
     <div class="card">
       <div class="card-top"><span class="t">Keeper roster</span><span class="s">5 pots · 5 picks</span></div>
@@ -359,29 +373,14 @@ td.hit .num{color:var(--orange)}
       <button class="btn btn-primary" id="shareBtn" type="button">Share Results</button>
       <p class="share-msg" id="shareMsg" role="status"></p>
       <textarea id="shareFallback" readonly hidden aria-label="Results text to copy"></textarea>
+      <button class="btn btn-ghost btn-sm" id="againBtn" type="button" hidden></button>
     </div>
-    <details class="audit">
+    <details class="audit" id="audit">
       <summary>Show the full number board</summary>
-      <p>Every pot's hidden numbers, for the league's records. Kenton's picks are highlighted.</p>
+      <p>Every pot's hidden numbers, for the league's records. The picks are highlighted.</p>
       <div class="tablewrap"><table id="auditTable"></table></div>
     </details>
   </section>
-</div>
-
-<!-- Entry dock -->
-<div class="dock" id="dock">
-  <div class="dock-in" id="dockMain">
-    <div class="count"><b id="filled">0</b>/ 121 fields filled</div>
-    <button class="btn btn-primary" id="lockBtn" type="button">Lock It In</button>
-    <p class="msg" id="entryMsg" role="alert"></p>
-  </div>
-  <div class="dock-in" id="dockConfirm" hidden>
-    <p class="confirm-text">Lock <b>55 players</b> from <b>11 teams</b>, sort them into 5 pots by rank and shuffle each pot? Nothing can be edited after this.</p>
-    <div class="btnrow">
-      <button class="btn btn-ghost" id="cancelLock" type="button">Go back</button>
-      <button class="btn btn-primary" id="confirmLock" type="button">Lock &amp; shuffle</button>
-    </div>
-  </div>
 </div>
 
 <!-- Reveal overlay -->
@@ -407,9 +406,41 @@ td.hit .num{color:var(--orange)}
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  const state = { phase: "entry", teams: [], pots: [], round: 0, picks: [], selected: null, busy: false, sound: true };
+  // Kenton's link is /draft/<key>. Every other address is the practice draft.
+  const linkMatch = location.pathname.match(/^\/draft\/([^/]+)\/?$/);
+  const LIVE = !!linkMatch;
+  const KEY = linkMatch ? decodeURIComponent(linkMatch[1]) : null;
+  const ONLINE = /^https?:$/.test(location.protocol);
 
-  /* ---------- Randomness ---------- */
+  // League keepers from Keepers-1.xlsx, with overall ranks from the Hashtag Basketball
+  // dynasty rankings (full list.xlsx, updated 24 Sep 2026). Same data as src/worker.js.
+  const LEAGUE = [
+    { name: "BSOD", players: [["Chet Holmgren", 14], ["Dylan Harper", 17], ["Amen Thompson", 21], ["Josh Giddey", 33], ["VJ Edgecombe", 49]] },
+    { name: "Eastern Promises", players: [["Luka Doncic", 3], ["Nikola Jokic", 4], ["Tyrese Maxey", 8], ["Donovan Mitchell", 18], ["Stephen Curry", 66]] },
+    { name: "Tropics", players: [["Alex Sarr", 31], ["Matas Buzelis", 41], ["Bam Adebayo", 46], ["Jaylen Brown", 50], ["Onyeka Okongwu", 60]] },
+    { name: "Boogies", players: [["Tyler Herro", 53], ["James Harden", 65], ["Derik Queen", 80], ["Isaiah Hartenstein", 91], ["Kawhi Leonard", 102]] },
+    { name: "Curryous Klay", players: [["Domantas Sabonis", 64], ["Kyrie Irving", 95], ["Jalen Green", 98], ["Coby White", 104], ["Norman Powell", 116]] },
+    { name: "QuickleyIsTRASH", players: [["Brandon Miller", 44], ["Paolo Banchero", 47], ["Lauri Markkanen", 54], ["Zach Edey", 55], ["Reed Sheppard", 84]] },
+    { name: "Knicks", players: [["Karl Anthony Towns", 27], ["LaMelo Ball", 40], ["Zion Williamson", 81], ["Julius Randle", 99], ["Damian Lillard", 178]] },
+    { name: "AVINJUREDS", players: [["Jaren Jackson Jr.", 35], ["Anthony Davis", 52], ["Pascal Siakam", 61], ["Ja Morant", 83], ["Jarrett Allen", 109]] },
+    { name: "The Basketball Team", players: [["Tyrese Haliburton", 13], ["Austin Reaves", 22], ["Kon Knueppel", 25], ["Kevin Durant", 76], ["Joel Embiid", 100]] },
+    { name: "Paul Rudd All Stars", players: [["Cade Cunningham", 5], ["Scottie Barnes", 12], ["Franz Wagner", 30], ["Deni Avdija", 36], ["Darius Garland", 42]] },
+    { name: "What Does the Cat Say", players: [["Jalen Williams", 19], ["Trae Young", 29], ["Jalen Duren", 34], ["Donovan Clingan", 48], ["Walker Kessler", 68]] },
+  ];
+
+  const state = {
+    pots: [],     // pot membership, sorted by rank (no numbers)
+    board: null,  // number-to-player mapping; practice only, or the official one once complete
+    round: 0, picks: [], selected: null, busy: false, sound: true
+  };
+
+  function rankedPots() {
+    const all = LEAGUE.flatMap(t => t.players.map(([player, rank]) => ({ player, rank, team: t.name })))
+      .sort((a, b) => a.rank - b.rank);
+    return Array.from({ length: PER }, (_, p) => all.slice(p * TEAMS, (p + 1) * TEAMS));
+  }
+
+  /* ---------- Randomness (practice only; the official shuffle happens on the server) ---------- */
   function rint(n) {
     if (window.crypto && crypto.getRandomValues) {
       const lim = Math.floor(0x100000000 / n) * n, a = new Uint32Array(1);
@@ -421,6 +452,19 @@ td.hit .num{color:var(--orange)}
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) { const j = rint(i + 1); [arr[i], arr[j]] = [arr[j], arr[i]]; }
     return arr;
+  }
+
+  /* ---------- Server ---------- */
+  async function api(method, body) {
+    const res = await fetch("/api/draft", {
+      method,
+      headers: { "x-draft-key": KEY, ...(body ? { "content-type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store"
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    return { status: res.status, data };
   }
 
   /* ---------- Sound ---------- */
@@ -444,158 +488,31 @@ td.hit .num{color:var(--orange)}
 
   /* ---------- Screens ---------- */
   function setLive(text, on) { $("#liveText").textContent = text; $("#live").classList.toggle("on", !!on); }
-  async function go(phase) {
+  async function go(name) {
     const cur = document.querySelector(".screen:not([hidden])");
-    if (cur) { cur.classList.add("leaving"); await sleep(reduced ? 0 : 240); cur.hidden = true; cur.classList.remove("leaving"); }
-    state.phase = phase;
-    const next = $("#screen-" + phase);
+    if (cur && cur.id !== "screen-" + name) {
+      cur.classList.add("leaving"); await sleep(reduced ? 0 : 240); cur.hidden = true; cur.classList.remove("leaving");
+    }
+    const next = $("#screen-" + name);
     next.hidden = false;
     next.style.animation = "none"; void next.offsetWidth; next.style.animation = "";
-    $("#dock").hidden = phase !== "entry";
     window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   }
-
-  /* ---------- Entry ---------- */
-  const grid = $("#teamGrid");
-  for (let t = 0; t < TEAMS; t++) {
-    let rows = `<div class="prow prow-head" aria-hidden="true"><span>Player</span><span>Rank</span></div>`;
-    for (let p = 0; p < PER; p++) {
-      rows += `<div class="prow">
-        <input class="field player" id="t${t}p${p}" placeholder="Player ${p + 1}" aria-label="Team ${t + 1}, player ${p + 1}">
-        <input class="field rank" id="t${t}r${p}" inputmode="numeric" placeholder="#" aria-label="Team ${t + 1}, player ${p + 1} overall rank"></div>`;
-    }
-    grid.insertAdjacentHTML("beforeend", `<div class="team" id="team${t}">
-      <div class="team-top"><span class="team-no">${String(t + 1).padStart(2, "0")}</span>
-      <input class="field team-name" id="t${t}name" placeholder="Team ${t + 1} name" aria-label="Team ${t + 1} name"></div>
-      ${rows}</div>`);
+  function banner(kind, html, btnLabel, onBtn) {
+    const b = $("#banner");
+    b.className = "banner " + kind; b.hidden = false;
+    $("#bannerText").innerHTML = html;
+    const btn = $("#bannerBtn");
+    btn.hidden = !btnLabel;
+    if (btnLabel) { btn.textContent = btnLabel; btn.onclick = onBtn; }
   }
-  const allFields = () => [...grid.querySelectorAll(".field")];
-
-  function updateCount() {
-    const f = allFields();
-    $("#filled").textContent = f.filter(i => i.value.trim()).length;
-    for (let t = 0; t < TEAMS; t++) {
-      const done = [...$("#team" + t).querySelectorAll(".field")].every(i => i.value.trim());
-      $("#team" + t).classList.toggle("done", done);
-    }
+  function showError(title, text, retry) {
+    $("#errTitle").textContent = title;
+    $("#errText").textContent = text;
+    $("#errRetry").hidden = !retry;
+    $("#errRetry").onclick = retry || null;
+    go("error");
   }
-  grid.addEventListener("input", e => {
-    if (e.target.classList.contains("field")) {
-      e.target.classList.remove("missing");
-      updateCount();
-      if (!$("#dockConfirm").hidden) showConfirm(false);
-    }
-  });
-  $("#entryForm").addEventListener("submit", e => e.preventDefault());
-  // Enter jumps to the next field instead of submitting
-  grid.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    const f = allFields(), i = f.indexOf(e.target);
-    if (i > -1 && i < f.length - 1) f[i + 1].focus();
-  });
-
-  // League keepers from Keepers-1.xlsx, with overall ranks from the Hashtag Basketball
-  // dynasty rankings (full list.xlsx, updated 24 Sep 2026).
-  const LEAGUE = [
-    { name: "BSOD", players: [["Chet Holmgren", 14], ["Dylan Harper", 17], ["Amen Thompson", 21], ["Josh Giddey", 33], ["VJ Edgecombe", 49]] },
-    { name: "Eastern Promises", players: [["Luka Doncic", 3], ["Nikola Jokic", 4], ["Tyrese Maxey", 8], ["Donovan Mitchell", 18], ["Stephen Curry", 66]] },
-    { name: "Tropics", players: [["Alex Sarr", 31], ["Matas Buzelis", 41], ["Bam Adebayo", 46], ["Jaylen Brown", 50], ["Onyeka Okongwu", 60]] },
-    { name: "Boogies", players: [["Tyler Herro", 53], ["James Harden", 65], ["Derik Queen", 80], ["Isaiah Hartenstein", 91], ["Kawhi Leonard", 102]] },
-    { name: "Curryous Klay", players: [["Domantas Sabonis", 64], ["Kyrie Irving", 95], ["Jalen Green", 98], ["Coby White", 104], ["Norman Powell", 116]] },
-    { name: "QuickleyIsTRASH", players: [["Brandon Miller", 44], ["Paolo Banchero", 47], ["Lauri Markkanen", 54], ["Zach Edey", 55], ["Reed Sheppard", 84]] },
-    { name: "Knicks", players: [["Karl Anthony Towns", 27], ["LaMelo Ball", 40], ["Zion Williamson", 81], ["Julius Randle", 99], ["Damian Lillard", 178]] },
-    { name: "AVINJUREDS", players: [["Jaren Jackson Jr.", 35], ["Anthony Davis", 52], ["Pascal Siakam", 61], ["Ja Morant", 83], ["Jarrett Allen", 109]] },
-    { name: "The Basketball Team", players: [["Tyrese Haliburton", 13], ["Austin Reaves", 22], ["Kon Knueppel", 25], ["Kevin Durant", 76], ["Joel Embiid", 100]] },
-    { name: "Paul Rudd All Stars", players: [["Cade Cunningham", 5], ["Scottie Barnes", 12], ["Franz Wagner", 30], ["Deni Avdija", 36], ["Darius Garland", 42]] },
-    { name: "What Does the Cat Say", players: [["Jalen Williams", 19], ["Trae Young", 29], ["Jalen Duren", 34], ["Donovan Clingan", 48], ["Walker Kessler", 68]] },
-  ];
-  function loadLeague() {
-    for (let t = 0; t < TEAMS; t++) {
-      $(`#t${t}name`).value = LEAGUE[t].name;
-      for (let p = 0; p < PER; p++) {
-        $(`#t${t}p${p}`).value = LEAGUE[t].players[p][0];
-        $(`#t${t}r${p}`).value = LEAGUE[t].players[p][1];
-      }
-    }
-    allFields().forEach(f => f.classList.remove("missing"));
-    $("#entryMsg").textContent = "";
-    updateCount();
-  }
-  $("#sampleBtn").addEventListener("click", loadLeague);
-  loadLeague();
-  $("#clearBtn").addEventListener("click", () => {
-    allFields().forEach(f => { f.value = ""; f.classList.remove("missing"); });
-    $("#entryMsg").textContent = "";
-    showConfirm(false);
-    updateCount();
-  });
-
-  function showConfirm(on) {
-    $("#dockMain").hidden = on; $("#dockConfirm").hidden = !on;
-    if (on) $("#confirmLock").focus();
-  }
-
-  $("#lockBtn").addEventListener("click", () => {
-    const f = allFields(), empty = f.filter(i => !i.value.trim());
-    f.forEach(i => i.classList.toggle("missing", !i.value.trim()));
-    if (empty.length) {
-      $("#entryMsg").textContent = `${empty.length} ${empty.length === 1 ? "field is" : "fields are"} empty. Every team needs a name, 5 players and a rank for each player before you can lock.`;
-      empty[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-      empty[0].focus({ preventScroll: true });
-      return;
-    }
-    const rankFields = f.filter(i => i.classList.contains("rank"));
-    const badRank = rankFields.filter(i => !/^\d+$/.test(i.value.trim()) || +i.value.trim() < 1);
-    if (badRank.length) {
-      badRank.forEach(i => i.classList.add("missing"));
-      $("#entryMsg").textContent = "Ranks must be whole numbers, like 14. Fix the highlighted rank fields.";
-      badRank[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-      return;
-    }
-    const seen = {};
-    const clash = rankFields.filter(i => { const v = +i.value.trim(); if (seen[v]) { seen[v].classList.add("missing"); return true; } seen[v] = i; return false; });
-    if (clash.length) {
-      clash.forEach(i => i.classList.add("missing"));
-      $("#entryMsg").textContent = "Two players share the same rank. Every player needs a different rank so the pots split cleanly.";
-      clash[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
-      return;
-    }
-    const names = f.filter(i => i.classList.contains("team-name")).map(i => i.value.trim().toLowerCase());
-    const dupe = names.find((n, i) => names.indexOf(n) !== i);
-    if (dupe) {
-      $("#entryMsg").textContent = "Two teams share the same name. Give each team a unique name so the results read clearly.";
-      return;
-    }
-    $("#entryMsg").textContent = "";
-    showConfirm(true);
-  });
-  $("#cancelLock").addEventListener("click", () => { showConfirm(false); $("#lockBtn").focus(); });
-
-  $("#confirmLock").addEventListener("click", () => {
-    state.teams = [];
-    for (let t = 0; t < TEAMS; t++) {
-      const players = [];
-      for (let p = 0; p < PER; p++) players.push(Object.freeze({ player: $(`#t${t}p${p}`).value.trim(), rank: +$(`#t${t}r${p}`).value.trim() }));
-      state.teams.push(Object.freeze({ name: $(`#t${t}name`).value.trim(), players: Object.freeze(players) }));
-    }
-    Object.freeze(state.teams);
-    // Sort all 55 by overall rank, split into 5 pots of 11, then shuffle each pot
-    const all = state.teams.flatMap(t => t.players.map(x => ({ player: x.player, rank: x.rank, team: t.name })))
-      .sort((a, b) => a.rank - b.rank);
-    state.pots = [];
-    for (let p = 0; p < PER; p++) {
-      const pot = shuffle(all.slice(p * TEAMS, (p + 1) * TEAMS));
-      state.pots.push(Object.freeze(pot.map((x, i) => Object.freeze({ ...x, num: i + 1 }))));
-    }
-    Object.freeze(state.pots);
-    allFields().forEach(i => i.disabled = true);
-    tone(523, .12, "square", .05); tone(784, .2, "square", .05, .1);
-    state.round = 0; state.picks = [];
-    renderDraft();
-    setLive("Live", true);
-    go("draft");
-  });
 
   /* ---------- Draft ---------- */
   function renderTracker() {
@@ -612,6 +529,7 @@ td.hit .num{color:var(--orange)}
   }
   function renderDraft() {
     state.selected = null;
+    $("#pickErr").textContent = "";
     renderTracker();
     const p = state.round;
     $("#roundLabel").textContent = `Round ${p + 1} of ${PER}`;
@@ -627,14 +545,15 @@ td.hit .num{color:var(--orange)}
     }
     updateRevealBtn();
   }
-  function updateRevealBtn() {
+  function updateRevealBtn(label) {
     const b = $("#revealBtn");
-    b.disabled = state.selected == null;
-    b.textContent = state.selected == null ? "Pick a number" : `Reveal #${state.selected}`;
+    b.disabled = state.selected == null || state.busy;
+    b.textContent = label || (state.selected == null ? "Pick a number" : `Reveal #${state.selected}`);
   }
   $("#keypad").addEventListener("click", e => {
     const k = e.target.closest(".key"); if (!k || state.busy) return;
     state.selected = +k.dataset.n;
+    $("#pickErr").textContent = "";
     document.querySelectorAll(".key").forEach(x => x.setAttribute("aria-pressed", String(x === k)));
     tone(880 + state.selected * 20, .06, "triangle", .04);
     updateRevealBtn();
@@ -642,23 +561,51 @@ td.hit .num{color:var(--orange)}
   // Number keys on a keyboard also pick (type 1 then 0 quickly for 10, 1 then 1 for 11)
   let keyBuf = "", keyTimer;
   document.addEventListener("keydown", e => {
-    if (state.phase !== "draft" || state.busy || !/^\d$/.test(e.key)) return;
+    if ($("#screen-draft").hidden || !$("#reveal").hidden || state.busy || !/^\d$/.test(e.key)) return;
     keyBuf += e.key; clearTimeout(keyTimer);
     keyTimer = setTimeout(() => { keyBuf = ""; }, 700);
     let n = +keyBuf; if (n < 1 || n > 11) { keyBuf = e.key; n = +e.key; }
     if (n >= 1 && n <= 11) document.querySelector(`.key[data-n="${n}"]`).click();
   });
 
-  $("#revealBtn").addEventListener("click", runReveal);
+  $("#revealBtn").addEventListener("click", makePick);
+
+  // Get the player behind the chosen number. On Kenton's link the server records
+  // the pick first, so closing the page mid-reveal can't undo it.
+  async function makePick() {
+    if (state.busy || state.selected == null) return;
+    const p = state.round, n = state.selected;
+    if (!LIVE) {
+      const x = state.board[p][n - 1];
+      return runReveal({ pot: p + 1, num: n, player: x.player, team: x.team, rank: x.rank });
+    }
+    state.busy = true;
+    updateRevealBtn("Locking in…");
+    let r;
+    try { r = await api("POST", { pot: p, num: n }); }
+    catch (e) {
+      state.busy = false; updateRevealBtn();
+      $("#pickErr").textContent = "Couldn't reach the server, so nothing was saved. Check your connection and tap Reveal again.";
+      return;
+    }
+    const s = r.data.state;
+    if (s && s.board) state.board = s.board;
+    if (r.data.pick) { state.busy = false; return runReveal(r.data.pick); }
+    // Already recorded (a retry after a dropped connection, or a second tab): reveal what's on file.
+    if (s && s.picks.length > p) { state.busy = false; return runReveal(s.picks[p]); }
+    state.busy = false; updateRevealBtn();
+    $("#pickErr").textContent = r.status === 403
+      ? "This draft link isn't valid anymore. Ask the commissioner for the link again."
+      : (r.data.error || "That pick didn't go through. Tap Reveal to try again.");
+  }
 
   /* ---------- Reveal ---------- */
-  async function runReveal() {
-    if (state.busy || state.selected == null) return;
+  async function runReveal(pick) {
     state.busy = true;
-    const p = state.round, n = state.selected, pick = state.pots[p][n - 1];
+    const p = pick.pot - 1;
     const ov = $("#reveal"), clock = $("#rvClock"), digit = $("#rvDigit"), reel = $("#rvReel"), res = $("#rvResult");
     $("#rvHead").innerHTML = "";
-    $("#rvHead").append(`Pot ${p + 1} · Number `, Object.assign(document.createElement("b"), { textContent: n }));
+    $("#rvHead").append(`Pot ${pick.pot} · Number `, Object.assign(document.createElement("b"), { textContent: pick.num }));
     res.hidden = true; reel.hidden = true; clock.hidden = false; reel.classList.remove("slow");
     ov.hidden = false;
     document.body.style.overflow = "hidden";
@@ -692,7 +639,7 @@ td.hit .num{color:var(--orange)}
     }
 
     // Impact
-    $("#rvLabel").textContent = `Kenton's Pot ${p + 1} keeper`;
+    $("#rvLabel").textContent = LIVE ? `Kenton's Pot ${pick.pot} keeper` : `Pot ${pick.pot} keeper (practice)`;
     $("#rvName").textContent = pick.player;
     $("#rvTeam").textContent = `${pick.team} · #${pick.rank} overall`;
     const nm = $("#rvName"); nm.style.animation = "none"; void nm.offsetWidth; nm.style.animation = "";
@@ -705,10 +652,10 @@ td.hit .num{color:var(--orange)}
     horn();
     if (navigator.vibrate) try { navigator.vibrate([80, 40, 160]); } catch (e) {}
 
-    state.picks.push({ pot: p + 1, num: n, player: pick.player, team: pick.team, rank: pick.rank });
-    state.round++;
+    state.picks[p] = pick;
+    state.round = state.picks.length;
     renderTracker();
-    $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : "See Kenton's keepers";
+    $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : (LIVE ? "See Kenton's keepers" : "See practice results");
     setTimeout(() => $("#rvNext").focus({ preventScroll: true }), reduced ? 0 : 900);
   }
 
@@ -722,9 +669,7 @@ td.hit .num{color:var(--orange)}
       const st = $("#screen-draft"); st.style.animation = "none"; void st.offsetWidth; st.style.animation = "";
       window.scrollTo({ top: 0 });
     } else {
-      renderResults();
-      setLive("Final", false);
-      go("results");
+      showResults(state.picks, state.board, LIVE);
     }
   });
 
@@ -766,9 +711,15 @@ td.hit .num{color:var(--orange)}
   }
 
   /* ---------- Results ---------- */
-  function renderResults() {
+  let shown = { picks: [], official: false };
+  function showResults(picks, board, official) {
+    shown = { picks, official };
+    $("#resEyebrow").textContent = official ? "Official results" : "Practice results";
+    $("#resTitle").innerHTML = official ? 'Kenton\'s <span class="hl">Keepers</span>' : 'Practice <span class="hl">Keepers</span>';
+    $("#shareMsg").textContent = ""; $("#shareFallback").hidden = true;
+
     const ol = $("#roster"); ol.innerHTML = "";
-    state.picks.forEach((k, i) => {
+    picks.forEach((k, i) => {
       const li = document.createElement("li");
       li.style.animationDelay = (i * 0.09) + "s";
       li.innerHTML = `<div class="pot-badge">Pot<b></b></div><div class="who"><div class="n"></div><div class="tm"></div></div><span class="pickno"></span>`;
@@ -779,30 +730,40 @@ td.hit .num{color:var(--orange)}
       ol.append(li);
     });
 
+    $("#audit").hidden = !board;
     const tb = $("#auditTable"); tb.innerHTML = "";
-    const head = document.createElement("tr");
-    head.append(Object.assign(document.createElement("th"), { textContent: "No." }));
-    for (let p = 0; p < PER; p++) head.append(Object.assign(document.createElement("th"), { textContent: "Pot " + (p + 1) }));
-    const thead = document.createElement("thead"); thead.append(head); tb.append(thead);
-    const body = document.createElement("tbody");
-    for (let n = 1; n <= TEAMS; n++) {
-      const tr = document.createElement("tr");
-      tr.append(Object.assign(document.createElement("th"), { textContent: n }));
-      for (let p = 0; p < PER; p++) {
-        const x = state.pots[p][n - 1], td = document.createElement("td");
-        if (state.picks[p] && state.picks[p].num === n) td.className = "hit";
-        td.append(x.player, Object.assign(document.createElement("span"), { className: "tm", textContent: `${x.team} · #${x.rank}` }));
-        tr.append(td);
+    if (board) {
+      const head = document.createElement("tr");
+      head.append(Object.assign(document.createElement("th"), { textContent: "No." }));
+      for (let p = 0; p < PER; p++) head.append(Object.assign(document.createElement("th"), { textContent: "Pot " + (p + 1) }));
+      const thead = document.createElement("thead"); thead.append(head); tb.append(thead);
+      const body = document.createElement("tbody");
+      for (let n = 1; n <= TEAMS; n++) {
+        const tr = document.createElement("tr");
+        tr.append(Object.assign(document.createElement("th"), { textContent: n }));
+        for (let p = 0; p < PER; p++) {
+          const x = board[p][n - 1], td = document.createElement("td");
+          if (picks[p] && picks[p].num === n) td.className = "hit";
+          td.append(x.player, Object.assign(document.createElement("span"), { className: "tm", textContent: `${x.team} · #${x.rank}` }));
+          tr.append(td);
+        }
+        body.append(tr);
       }
-      body.append(tr);
+      tb.append(body);
     }
-    tb.append(body);
+
+    const again = $("#againBtn");
+    again.hidden = LIVE;
+    again.textContent = official ? "Back to practice" : "Run another practice";
+    setLive(official ? "Final" : "Practice", false);
+    go("results");
   }
+  $("#againBtn").addEventListener("click", startPractice);
 
   function shareText() {
-    const lines = ["🏀 KENTON'S KEEPER LOTTERY RESULTS", ""];
-    state.picks.forEach(k => lines.push(`Pot ${k.pot} (number ${k.num}): ${k.player}, #${k.rank} overall, from ${k.team}`));
-    lines.push("", "Welcome to the league, Kenton.");
+    const lines = [shown.official ? "🏀 KENTON'S KEEPER LOTTERY RESULTS" : "🏀 KEEPER LOTTERY PRACTICE RUN (not official)", ""];
+    shown.picks.forEach(k => lines.push(`Pot ${k.pot} (number ${k.num}): ${k.player}, #${k.rank} overall, from ${k.team}`));
+    if (shown.official) lines.push("", "Welcome to the league, Kenton.");
     return lines.join("\n");
   }
   $("#shareBtn").addEventListener("click", () => {
@@ -821,12 +782,54 @@ td.hit .num{color:var(--orange)}
     } else fallback();
   });
 
-  /* ---------- Guard against losing a live draft ---------- */
-  window.addEventListener("beforeunload", e => {
-    if (state.phase === "draft") { e.preventDefault(); e.returnValue = ""; }
-  });
+  /* ---------- Start ---------- */
+  function startPractice() {
+    state.pots = rankedPots();
+    state.board = state.pots.map(pot => shuffle(pot.map(x => ({ ...x }))).map((x, i) => ({ ...x, num: i + 1 })));
+    state.picks = []; state.round = 0; state.busy = false;
+    setLive("Practice", false);
+    renderDraft();
+    go("draft");
+    checkOfficial();
+  }
 
-  updateCount();
+  // Let the league see Kenton's results once his real draft is finished.
+  async function checkOfficial() {
+    if (!ONLINE) return;
+    let r;
+    try { r = await (await fetch("/api/results", { cache: "no-store" })).json(); } catch (e) { return; }
+    if (r.complete) {
+      banner("practice", "<b>Kenton's official draft is done.</b> This page is still a practice run that saves nothing.",
+        "See Kenton's keepers", () => showResults(r.picks, r.board, true));
+    } else if (r.started) {
+      banner("practice", `<b>Practice run.</b> Nothing is saved here. Kenton's official draft is in progress, on Pot ${r.round + 1}.`);
+    }
+  }
+
+  async function startLive() {
+    setLive("Official", true);
+    banner("official", "<b>Official draft.</b> Every pick is final the moment you tap Reveal. If you lose your connection, open this link again to pick up where you left off.");
+    go("loading");
+    let r;
+    try { r = await api("GET"); }
+    catch (e) { return showError("Couldn't reach the server", "Check your connection, then try again. No picks have been lost.", startLive); }
+    if (r.status === 403) {
+      $("#banner").hidden = true;
+      return showError("This draft link isn't valid", "Make sure you opened the whole link exactly as the commissioner sent it.");
+    }
+    if (r.status !== 200) return showError("Something went wrong", "The server had a problem loading the draft. Try again in a moment. No picks have been lost.", startLive);
+    const s = r.data;
+    state.pots = s.pots; state.picks = s.picks; state.round = s.round; state.board = s.board;
+    if (s.complete) return showResults(s.picks, s.board, true);
+    renderDraft();
+    go("draft");
+  }
+
+  if (LIVE) startLive();
+  else {
+    banner("practice", "<b>Practice run.</b> Nothing is saved and the pots reshuffle every time. Kenton's official draft happens on his own link.");
+    startPractice();
+  }
 })();
 </script>
 </body>
