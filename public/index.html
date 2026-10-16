@@ -113,10 +113,10 @@ h1 .hl{color:var(--orange);text-shadow:0 0 28px rgba(255,122,26,.45)}
 .field:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
 .field.team-name{font-family:var(--f-label);font-weight:700;font-size:19px;letter-spacing:.04em;text-transform:uppercase}
 .field.missing{border-color:var(--danger);box-shadow:0 0 0 3px rgba(255,90,95,.15)}
-.prow{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px}
-.pchip{font-family:var(--f-label);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
-  text-align:center;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 0;line-height:1.2}
-.pchip b{display:block;font-family:var(--f-display);font-size:18px;color:var(--fg)}
+.prow{display:grid;grid-template-columns:1fr 76px;align-items:center;gap:8px}
+.prow-head{font-family:var(--f-label);font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.prow-head span:last-child{text-align:center}
+.field.rank{text-align:center;font-variant-numeric:tabular-nums;padding-inline:6px}
 
 .dock{
   position:fixed;left:0;right:0;bottom:0;z-index:20;
@@ -318,9 +318,9 @@ td.hit .num{color:var(--orange)}
     <div class="entry-head">
       <div class="eyebrow">Commissioner setup</div>
       <h1>Kenton's <span class="hl">Keeper</span> Lottery</h1>
-      <p class="lede">Enter each team's 5 unprotected players <b>best to worst</b> by Hashtag Basketball rank.
-        Row 1 from every team forms Pot 1, row 2 forms Pot 2, and so on. When you lock it in, each pot is shuffled
-        and numbered 1 through 11. Nobody sees which number hides which player.</p>
+      <p class="lede">Enter each team's 5 unprotected players with their <b>overall Hashtag Basketball dynasty rank</b>.
+        When you lock it in, all 55 are sorted by rank: the top 11 form Pot 1, the next 11 form Pot 2, and so on.
+        Each pot is then shuffled and numbered 1 through 11. Nobody sees which number hides which player.</p>
     </div>
     <div class="entry-tools">
       <button class="btn btn-ghost btn-sm" id="sampleBtn" type="button">Reload league keepers</button>
@@ -371,12 +371,12 @@ td.hit .num{color:var(--orange)}
 <!-- Entry dock -->
 <div class="dock" id="dock">
   <div class="dock-in" id="dockMain">
-    <div class="count"><b id="filled">0</b>/ 66 fields filled</div>
+    <div class="count"><b id="filled">0</b>/ 121 fields filled</div>
     <button class="btn btn-primary" id="lockBtn" type="button">Lock It In</button>
     <p class="msg" id="entryMsg" role="alert"></p>
   </div>
   <div class="dock-in" id="dockConfirm" hidden>
-    <p class="confirm-text">Lock <b>55 players</b> from <b>11 teams</b> and shuffle the pots? Nothing can be edited after this.</p>
+    <p class="confirm-text">Lock <b>55 players</b> from <b>11 teams</b>, sort them into 5 pots by rank and shuffle each pot? Nothing can be edited after this.</p>
     <div class="btnrow">
       <button class="btn btn-ghost" id="cancelLock" type="button">Go back</button>
       <button class="btn btn-primary" id="confirmLock" type="button">Lock &amp; shuffle</button>
@@ -403,7 +403,6 @@ td.hit .num{color:var(--orange)}
 <script>
 (() => {
   const TEAMS = 11, PER = 5;
-  const ORD = ["Best", "Second-best", "Third-best", "Fourth-best", "Fifth-best"];
   const $ = s => document.querySelector(s);
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -459,11 +458,11 @@ td.hit .num{color:var(--orange)}
   /* ---------- Entry ---------- */
   const grid = $("#teamGrid");
   for (let t = 0; t < TEAMS; t++) {
-    let rows = "";
+    let rows = `<div class="prow prow-head" aria-hidden="true"><span>Player</span><span>Rank</span></div>`;
     for (let p = 0; p < PER; p++) {
-      rows += `<div class="prow"><span class="pchip" aria-hidden="true">Pot<b>${p + 1}</b></span>
-        <input class="field player" id="t${t}p${p}" data-t="${t}" data-p="${p}" placeholder="${ORD[p]} player"
-          aria-label="Team ${t + 1}, ${ORD[p].toLowerCase()} player (Pot ${p + 1})"></div>`;
+      rows += `<div class="prow">
+        <input class="field player" id="t${t}p${p}" placeholder="Player ${p + 1}" aria-label="Team ${t + 1}, player ${p + 1}">
+        <input class="field rank" id="t${t}r${p}" inputmode="numeric" placeholder="#" aria-label="Team ${t + 1}, player ${p + 1} overall rank"></div>`;
     }
     grid.insertAdjacentHTML("beforeend", `<div class="team" id="team${t}">
       <div class="team-top"><span class="team-no">${String(t + 1).padStart(2, "0")}</span>
@@ -496,20 +495,28 @@ td.hit .num{color:var(--orange)}
     if (i > -1 && i < f.length - 1) f[i + 1].focus();
   });
 
-  // League keepers from Keepers-1.xlsx. LEAGUE_POTS[p][t] is team t's player in row p+1.
-  const LEAGUE_TEAMS = ["BSOD", "Eastern Promises", "Tropics", "Boogies", "Curryous Klay", "QuickleyIsTRASH",
-    "Knicks", "AVINJUREDS", "The Basketball Team", "Paul Rudd All Stars", "What Does the Cat Say"];
-  const LEAGUE_POTS = [
-    ["Chet Holmgren", "Luka Doncic", "Alex Sarr", "Tyler Herro", "Domantas Sabonis", "Brandon Miller", "Karl Anthony Towns", "Jaren Jackson Jr.", "Tyrese Haliburton", "Cade Cunningham", "Jalen Williams"],
-    ["Dylan Harper", "Nikola Jokic", "Matas Buzelis", "James Harden", "Kyrie Irving", "Paolo Banchero", "LaMelo Ball", "Anthony Davis", "Austin Reaves", "Scottie Barnes", "Trae Young"],
-    ["Amen Thompson", "Tyrese Maxey", "Bam Adebayo", "Derik Queen", "Jalen Green", "Lauri Markkanen", "Zion Williamson", "Pascal Siakam", "Kon Knueppel", "Franz Wagner", "Jalen Duren"],
-    ["VJ Edgecombe", "Donovan Mitchell", "Jaylen Brown", "Isaiah Hartenstein", "Coby White", "Zach Edey", "Julius Randle", "Ja Morant", "Kevin Durant", "Deni Avdija", "Donovan Clingan"],
-    ["Josh Giddey", "Stephen Curry", "Onyeka Okongwu", "Kawhi Leonard", "Norman Powell", "Reed Sheppard", "Damian Lillard", "Jarrett Allen", "Joel Embiid", "Darius Garland", "Walker Kessler"]
+  // League keepers from Keepers-1.xlsx, with overall ranks from the Hashtag Basketball
+  // dynasty rankings (full list.xlsx, updated 24 Sep 2026).
+  const LEAGUE = [
+    { name: "BSOD", players: [["Chet Holmgren", 14], ["Dylan Harper", 17], ["Amen Thompson", 21], ["Josh Giddey", 33], ["VJ Edgecombe", 49]] },
+    { name: "Eastern Promises", players: [["Luka Doncic", 3], ["Nikola Jokic", 4], ["Tyrese Maxey", 8], ["Donovan Mitchell", 18], ["Stephen Curry", 66]] },
+    { name: "Tropics", players: [["Alex Sarr", 31], ["Matas Buzelis", 41], ["Bam Adebayo", 46], ["Jaylen Brown", 50], ["Onyeka Okongwu", 60]] },
+    { name: "Boogies", players: [["Tyler Herro", 53], ["James Harden", 65], ["Derik Queen", 80], ["Isaiah Hartenstein", 91], ["Kawhi Leonard", 102]] },
+    { name: "Curryous Klay", players: [["Domantas Sabonis", 64], ["Kyrie Irving", 95], ["Jalen Green", 98], ["Coby White", 104], ["Norman Powell", 116]] },
+    { name: "QuickleyIsTRASH", players: [["Brandon Miller", 44], ["Paolo Banchero", 47], ["Lauri Markkanen", 54], ["Zach Edey", 55], ["Reed Sheppard", 84]] },
+    { name: "Knicks", players: [["Karl Anthony Towns", 27], ["LaMelo Ball", 40], ["Zion Williamson", 81], ["Julius Randle", 99], ["Damian Lillard", 178]] },
+    { name: "AVINJUREDS", players: [["Jaren Jackson Jr.", 35], ["Anthony Davis", 52], ["Pascal Siakam", 61], ["Ja Morant", 83], ["Jarrett Allen", 109]] },
+    { name: "The Basketball Team", players: [["Tyrese Haliburton", 13], ["Austin Reaves", 22], ["Kon Knueppel", 25], ["Kevin Durant", 76], ["Joel Embiid", 100]] },
+    { name: "Paul Rudd All Stars", players: [["Cade Cunningham", 5], ["Scottie Barnes", 12], ["Franz Wagner", 30], ["Deni Avdija", 36], ["Darius Garland", 42]] },
+    { name: "What Does the Cat Say", players: [["Jalen Williams", 19], ["Trae Young", 29], ["Jalen Duren", 34], ["Donovan Clingan", 48], ["Walker Kessler", 68]] },
   ];
   function loadLeague() {
     for (let t = 0; t < TEAMS; t++) {
-      $(`#t${t}name`).value = LEAGUE_TEAMS[t];
-      for (let p = 0; p < PER; p++) $(`#t${t}p${p}`).value = LEAGUE_POTS[p][t];
+      $(`#t${t}name`).value = LEAGUE[t].name;
+      for (let p = 0; p < PER; p++) {
+        $(`#t${t}p${p}`).value = LEAGUE[t].players[p][0];
+        $(`#t${t}r${p}`).value = LEAGUE[t].players[p][1];
+      }
     }
     allFields().forEach(f => f.classList.remove("missing"));
     $("#entryMsg").textContent = "";
@@ -533,9 +540,25 @@ td.hit .num{color:var(--orange)}
     const f = allFields(), empty = f.filter(i => !i.value.trim());
     f.forEach(i => i.classList.toggle("missing", !i.value.trim()));
     if (empty.length) {
-      $("#entryMsg").textContent = `${empty.length} ${empty.length === 1 ? "field is" : "fields are"} empty. Every team needs a name and all 5 players before you can lock.`;
+      $("#entryMsg").textContent = `${empty.length} ${empty.length === 1 ? "field is" : "fields are"} empty. Every team needs a name, 5 players and a rank for each player before you can lock.`;
       empty[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
       empty[0].focus({ preventScroll: true });
+      return;
+    }
+    const rankFields = f.filter(i => i.classList.contains("rank"));
+    const badRank = rankFields.filter(i => !/^\d+$/.test(i.value.trim()) || +i.value.trim() < 1);
+    if (badRank.length) {
+      badRank.forEach(i => i.classList.add("missing"));
+      $("#entryMsg").textContent = "Ranks must be whole numbers, like 14. Fix the highlighted rank fields.";
+      badRank[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      return;
+    }
+    const seen = {};
+    const clash = rankFields.filter(i => { const v = +i.value.trim(); if (seen[v]) { seen[v].classList.add("missing"); return true; } seen[v] = i; return false; });
+    if (clash.length) {
+      clash.forEach(i => i.classList.add("missing"));
+      $("#entryMsg").textContent = "Two players share the same rank. Every player needs a different rank so the pots split cleanly.";
+      clash[0].scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
       return;
     }
     const names = f.filter(i => i.classList.contains("team-name")).map(i => i.value.trim().toLowerCase());
@@ -553,13 +576,16 @@ td.hit .num{color:var(--orange)}
     state.teams = [];
     for (let t = 0; t < TEAMS; t++) {
       const players = [];
-      for (let p = 0; p < PER; p++) players.push($(`#t${t}p${p}`).value.trim());
+      for (let p = 0; p < PER; p++) players.push(Object.freeze({ player: $(`#t${t}p${p}`).value.trim(), rank: +$(`#t${t}r${p}`).value.trim() }));
       state.teams.push(Object.freeze({ name: $(`#t${t}name`).value.trim(), players: Object.freeze(players) }));
     }
     Object.freeze(state.teams);
+    // Sort all 55 by overall rank, split into 5 pots of 11, then shuffle each pot
+    const all = state.teams.flatMap(t => t.players.map(x => ({ player: x.player, rank: x.rank, team: t.name })))
+      .sort((a, b) => a.rank - b.rank);
     state.pots = [];
     for (let p = 0; p < PER; p++) {
-      const pot = shuffle(state.teams.map(t => ({ player: t.players[p], team: t.name })));
+      const pot = shuffle(all.slice(p * TEAMS, (p + 1) * TEAMS));
       state.pots.push(Object.freeze(pot.map((x, i) => Object.freeze({ ...x, num: i + 1 }))));
     }
     Object.freeze(state.pots);
@@ -590,7 +616,8 @@ td.hit .num{color:var(--orange)}
     const p = state.round;
     $("#roundLabel").textContent = `Round ${p + 1} of ${PER}`;
     $("#potNum").textContent = p + 1;
-    $("#potSub").textContent = `${ORD[p]} unprotected player from each of the 11 teams`;
+    const rs = state.pots[p].map(x => x.rank);
+    $("#potSub").textContent = `11 players ranked #${Math.min(...rs)} to #${Math.max(...rs)} overall`;
     const kp = $("#keypad"); kp.innerHTML = "";
     for (let n = 1; n <= TEAMS; n++) {
       const b = document.createElement("button");
@@ -667,7 +694,7 @@ td.hit .num{color:var(--orange)}
     // Impact
     $("#rvLabel").textContent = `Kenton's Pot ${p + 1} keeper`;
     $("#rvName").textContent = pick.player;
-    $("#rvTeam").textContent = pick.team;
+    $("#rvTeam").textContent = `${pick.team} · #${pick.rank} overall`;
     const nm = $("#rvName"); nm.style.animation = "none"; void nm.offsetWidth; nm.style.animation = "";
     res.hidden = false;
     if (!reduced) {
@@ -678,7 +705,7 @@ td.hit .num{color:var(--orange)}
     horn();
     if (navigator.vibrate) try { navigator.vibrate([80, 40, 160]); } catch (e) {}
 
-    state.picks.push({ pot: p + 1, num: n, player: pick.player, team: pick.team });
+    state.picks.push({ pot: p + 1, num: n, player: pick.player, team: pick.team, rank: pick.rank });
     state.round++;
     renderTracker();
     $("#rvNext").textContent = state.round < PER ? `Next: Pot ${state.round + 1}` : "See Kenton's keepers";
@@ -747,8 +774,8 @@ td.hit .num{color:var(--orange)}
       li.innerHTML = `<div class="pot-badge">Pot<b></b></div><div class="who"><div class="n"></div><div class="tm"></div></div><span class="pickno"></span>`;
       li.querySelector(".pot-badge b").textContent = k.pot;
       li.querySelector(".n").textContent = k.player;
-      li.querySelector(".tm").textContent = "from " + k.team;
-      li.querySelector(".pickno").textContent = "Picked #" + k.num;
+      li.querySelector(".tm").textContent = `from ${k.team} · #${k.rank} overall`;
+      li.querySelector(".pickno").textContent = "Number " + k.num;
       ol.append(li);
     });
 
@@ -764,7 +791,7 @@ td.hit .num{color:var(--orange)}
       for (let p = 0; p < PER; p++) {
         const x = state.pots[p][n - 1], td = document.createElement("td");
         if (state.picks[p] && state.picks[p].num === n) td.className = "hit";
-        td.append(x.player, Object.assign(document.createElement("span"), { className: "tm", textContent: x.team }));
+        td.append(x.player, Object.assign(document.createElement("span"), { className: "tm", textContent: `${x.team} · #${x.rank}` }));
         tr.append(td);
       }
       body.append(tr);
@@ -774,7 +801,7 @@ td.hit .num{color:var(--orange)}
 
   function shareText() {
     const lines = ["🏀 KENTON'S KEEPER LOTTERY RESULTS", ""];
-    state.picks.forEach(k => lines.push(`Pot ${k.pot} (picked #${k.num}): ${k.player} — from ${k.team}`));
+    state.picks.forEach(k => lines.push(`Pot ${k.pot} (number ${k.num}): ${k.player}, #${k.rank} overall, from ${k.team}`));
     lines.push("", "Welcome to the league, Kenton.");
     return lines.join("\n");
   }
